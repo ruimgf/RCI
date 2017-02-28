@@ -1,6 +1,17 @@
+CC = gcc
+CFLAGS  = -Wall
+TARGET = msgserv
+DEPS = udp.o
+
+all: $(TARGET)
+
 tcp.o: tcp.c tcp.h
-	gcc -c tcp.c -g -o tcp.o
+	$(CC) $(CFLAGS) -c tcp.c
 udp.o: udp.c udp.h
-	gcc -c udp.c -g -o udp.o
-msgserv:
-	gcc msgserv.c udp.o -o msgserv.o
+	$(CC) $(CFLAGS) -c udp.c
+
+$(TARGET): $(TARGET).c $(DEPS)
+	$(CC) $(CFLAGS) $(TARGET).c $(DEPS) -o $(TARGET).o
+
+clean:
+	$(RM) *.o *~
