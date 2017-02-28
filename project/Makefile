@@ -11,7 +11,7 @@ udp.o: udp.c udp.h
 	$(CC) $(CFLAGS) -c udp.c
 
 $(TARGET): $(TARGET).c $(DEPS)
-	$(CC) $(CFLAGS) $(TARGET).c $(DEPS) -o $(TARGET).o
+	$(CC) $(CFLAGS) $(TARGET).c $(DEPS) -o $(TARGET)
 
 clean:
 	$(RM) *.o *~
