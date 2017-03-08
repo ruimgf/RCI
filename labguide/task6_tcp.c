@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <netdb.h>
 #include <sys/socket.h> /* for AF_INET */
+#include <signal.h>
 
 int main(void)
 {
@@ -28,7 +29,9 @@ int main(void)
   memset((void*)&addr,(int)'\0',sizeof(addr));
   addr.sin_family=AF_INET;
   addr.sin_addr=iaddr;
-  addr.sin_port=htons(8000);
+  addr.sin_port=htons(58000);
+
+  void (*old_handler)(int);//interrupt handler
 
   n=connect(fd,(struct sockaddr*)&addr,sizeof(addr));
   if(n==-1)
@@ -37,7 +40,10 @@ int main(void)
     exit(1);//error
   }
 
-  ptr=strcpy(buffer,"Hello!\n");
+  if((old_handler=signal(SIGPIPE,SIG_IGN))==SIG_ERR)
+    exit(1);//error
+
+  ptr=strcpy(buffer,"Hello\n");
   nbytes=7;
   nleft=nbytes;
 
