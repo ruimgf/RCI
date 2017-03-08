@@ -75,7 +75,7 @@ int udp_write_to(int udp_descriptor,char * mensage, int length,char * ip, int po
     size_t slen = sizeof(server);
     server.sin_family = AF_INET;
     server.sin_port = htons(port);
-    
+
     inet_aton(ip, &server.sin_addr);
     if (udp_descriptor == -1 || mensage == NULL || length <= 0  || ip == NULL || port < 0){
       return(-2);

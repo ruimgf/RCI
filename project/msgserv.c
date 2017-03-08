@@ -23,7 +23,7 @@ int main(int argc, char *argv[]){
   char test_reg[100];
 
 
-  // validar argumentos de chamada
+  // trocar a ordem disto, pode aparecer por outras ordens
   if(argc < 9){
     wrong_use();
   }else{
@@ -58,7 +58,7 @@ int main(int argc, char *argv[]){
   //
 
   // mudar isto para ir buscar o ip
-  int fd_id_server = udp_connect(ip_tejo,dns_port);
+  int fd_id_server = udp_connect();
   while(1){
     printf("Enter a command:  ");
     if(fgets(buffer, BUFFERSIZE , stdin) != NULL)
