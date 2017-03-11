@@ -11,7 +11,7 @@ char msgservIp[] = "127.0.0.1";
 int msgservPort = 2115;
 
 int publishMessage(char * message){
-    udp_write_to(myFd,message,strlen(message),msgservIp, msgservPort);
+    udpWriteTo(myFd,message,strlen(message),msgservIp, msgservPort);
     // add here code to send message to server
     return 0;
 }
@@ -50,9 +50,8 @@ void keyboardRead()
 
 int main(int argc, char ** argv){
 
-  myFd = udp_connect();
+  myFd = udpConnect();
   // mandar mensagem para ir buscar os servidores
-  //
   printf("Enter a command:  ");
   while(1){
     keyboardRead();
