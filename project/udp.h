@@ -11,7 +11,7 @@
  * @param  udp_server_port [Porta do Servidor]
  * @return                [Return]
  */
-int udp_connect();
+int udpConnect();
 /**
  * [udp_write Trata operções de escrita por parte dos clientes]
  * @param  udp_descriptor [identificador do servidor]
@@ -21,7 +21,11 @@ int udp_connect();
  * @param  overwrite     [se quer ou não fazer overwrite]
  * @return               [-1 em caso de erro 0 no caso de sucesso]
  */
+
 int udp_write_to(int udp_descriptor,char* mensage, int length,char * ip, int port);
+
+
+
 /**
  * [udp_read operação leitura por parte do cliente]
  * @param  udp_descriptor [identificador do servidor]
@@ -30,4 +34,4 @@ int udp_write_to(int udp_descriptor,char* mensage, int length,char * ip, int por
  * @param  value_length  [tamanho para receber valor]
  * @return               [nr_bytes lidos ou -1,-2 em casos de erro]
  */
-int udp_read(int udp_descriptor, char * buffer, int length);
+int udpRead(int udp_descriptor, char * buffer, int length);

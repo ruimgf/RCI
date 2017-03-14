@@ -6,7 +6,7 @@
 
 #define BUFFERSIZE 100
 
-void wrong_use(){
+void wrongUse(){
   printf("Wrong Program Usage : msgserv –n name –j ip -u upt –t tpt [-i siip] [-p sipt] [–m m] [–r r] \n");
   //exit(-1);
 }
@@ -24,29 +24,29 @@ int main(int argc, char *argv[])
   char test_reg[100];
 
 
-  // validar argumentos de chamada
+  // trocar a ordem disto, pode aparecer por outras ordens
   if(argc < 9){
-    wrong_use();
+    wrongUse();
   }else{
     if(strcmp(argv[1],"-n")==0){
       strcpy(name,argv[2]);
     }else{
-      wrong_use();
+      wrongUse();
     }
     if(strcmp(argv[3],"-j")==0){
       strcpy(ip,argv[4]);
     }else{
-      wrong_use();
+      wrongUse();
     }
     if(strcmp(argv[5],"-u")==0){
       strcpy(upt,argv[6]);
     }else{
-      wrong_use();
+      wrongUse();
     }
     if(strcmp(argv[7],"-t")==0){
       strcpy(tpt,argv[8]);
     }else{
-      wrong_use();
+      wrongUse();
     }
     // falta adicionar os opcionais
   }
@@ -57,7 +57,11 @@ int main(int argc, char *argv[])
   // Ir buscar todas as mensagens
 
   // mudar isto para ir buscar o ip
+<<<<<<< HEAD
   int fd_id_server = udp_connect();
+=======
+  int fd_id_server = udpConnect();
+>>>>>>> 2f19096f2fae7da2c7772dcb1bbd6c6324333a81
   while(1){
     printf("Enter a command:  ");
     if(fgets(buffer, BUFFERSIZE , stdin) != NULL)
@@ -78,7 +82,7 @@ int main(int argc, char *argv[])
 
       }else if(strcmp("join",command)==0){
         sprintf(test_reg,"REG %s;%s;%s;%s",name,ip,upt,tpt);
-        udp_write_to(fd_id_server,test_reg,strlen(test_reg),ip_tejo,dns_port);
+        udpWriteTo(fd_id_server,test_reg,strlen(test_reg),ip_tejo,dns_port);
         printf("Go Registar\n");
 
       }else if(strcmp("exit",command)==0){

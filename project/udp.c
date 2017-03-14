@@ -7,6 +7,7 @@
  * @return                [Return]
  */
 int udp_connect(){
+
   struct sockaddr_in server_addr;
   socklen_t len_endereco;
   int err;
@@ -43,7 +44,7 @@ int udp_connect(){
  * [udp_close Termina a ligação entre cliente e servidor]
  * @param udp_descriptor [Indentificador do servidor]
  */
-void udp_close(int udp_descriptor){
+void udpClose(int udp_descriptor){
 
   if (udp_descriptor == -1 ){
     return;
@@ -57,7 +58,7 @@ void udp_close(int udp_descriptor){
  * @param  mensage           [chave]
  * @return               [-1 em caso de erro 0 no caso de sucesso]
  */
-int udp_write_to(int udp_descriptor,char * mensage, int length,char * ip, int port){
+int udpWriteTo(int udp_descriptor,char * mensage, int length,char * ip, int port){
     char buffer[100];
     //verificar argumentos
     struct sockaddr_in server;
@@ -83,7 +84,7 @@ int udp_write_to(int udp_descriptor,char * mensage, int length,char * ip, int po
  * @param  length  [tamanho para receber valor]
  * @return               [nr_bytes lidos ou -1,-2 em casos de erro]
  */
-int udp_read(int udp_descriptor, char * buffer, int length){
+int udpRead(int udp_descriptor, char * buffer, int length){
 
   //verificar argumentos
   if (udp_descriptor == -1 || buffer == NULL || length <= 0){
