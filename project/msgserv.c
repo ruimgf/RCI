@@ -55,8 +55,6 @@ int main(int argc, char *argv[])
   // 2 - interrogar o servido de mensagens sobre a identidade dos outros servidores de mensagens
   //  e estabelecer TCP entre cada um destes
   // Ir buscar todas as mensagens
-  //
-  //
 
   // mudar isto para ir buscar o ip
   int fd_id_server = udp_connect();
@@ -71,7 +69,9 @@ int main(int argc, char *argv[])
       sscanf(buffer,"%s",command);
 
       if(strcmp("show_servers",command)==0){
+
         printf("Show Servers\n");
+
 
       }else if(strcmp("show_messages",command)==0){
           printf("Show mensagens\n");

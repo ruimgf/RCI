@@ -1,12 +1,4 @@
-#include <stdint.h>
 #include "udp.h"
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-
-
 
 /**
  * [udp_connect Realiza uma nova conexão ao servidor]
@@ -15,12 +7,9 @@
  * @return                [Return]
  */
 int udp_connect(){
-
-
   struct sockaddr_in server_addr;
   socklen_t len_endereco;
   int err;
-
 
   int sock_fd = socket(AF_INET, SOCK_DGRAM, 0);
 
@@ -75,7 +64,7 @@ int udp_write_to(int udp_descriptor,char * mensage, int length,char * ip, int po
     size_t slen = sizeof(server);
     server.sin_family = AF_INET;
     server.sin_port = htons(port);
-    
+
     inet_aton(ip, &server.sin_addr);
     if (udp_descriptor == -1 || mensage == NULL || length <= 0  || ip == NULL || port < 0){
       return(-2);
