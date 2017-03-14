@@ -11,7 +11,8 @@ void wrong_use(){
   //exit(-1);
 }
 
-int main(int argc, char *argv[]){
+int main(int argc, char *argv[])
+{
   char buffer[BUFFERSIZE];
   char command[BUFFERSIZE];
   char name[100];
@@ -58,7 +59,7 @@ int main(int argc, char *argv[]){
   //
 
   // mudar isto para ir buscar o ip
-  int fd_id_server = udp_connect(ip_tejo,dns_port);
+  int fd_id_server = udp_connect();
   while(1){
     printf("Enter a command:  ");
     if(fgets(buffer, BUFFERSIZE , stdin) != NULL)
@@ -70,7 +71,7 @@ int main(int argc, char *argv[]){
       sscanf(buffer,"%s",command);
 
       if(strcmp("show_servers",command)==0){
-          printf("Show Servers\n");
+        printf("Show Servers\n");
 
       }else if(strcmp("show_messages",command)==0){
           printf("Show mensagens\n");
