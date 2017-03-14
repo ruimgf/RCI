@@ -1,4 +1,9 @@
 #include <stdint.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
 
 /**
  * [udp_connect Realiza uma nova conexão ao servidor]
@@ -16,7 +21,7 @@ int udp_connect();
  * @param  overwrite     [se quer ou não fazer overwrite]
  * @return               [-1 em caso de erro 0 no caso de sucesso]
  */
-int udp_write_to(int udp_descriptor,char * mensage, int length,char * ip, int port);
+int udp_write_to(int udp_descriptor,char* mensage, int length,char * ip, int port);
 /**
  * [udp_read operação leitura por parte do cliente]
  * @param  udp_descriptor [identificador do servidor]
