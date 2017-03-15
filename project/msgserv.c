@@ -57,11 +57,8 @@ int main(int argc, char *argv[])
   // Ir buscar todas as mensagens
 
   // mudar isto para ir buscar o ip
-<<<<<<< HEAD
-  int fd_id_server = udp_connect();
-=======
   int fd_id_server = udpConnect();
->>>>>>> 2f19096f2fae7da2c7772dcb1bbd6c6324333a81
+
   while(1){
     printf("Enter a command:  ");
     if(fgets(buffer, BUFFERSIZE , stdin) != NULL)
@@ -87,6 +84,8 @@ int main(int argc, char *argv[])
 
       }else if(strcmp("exit",command)==0){
         exit(0);
+      }else if(strcmp("ler",command)==0){
+
       }else{
         printf("Unkown command\n");
       }

@@ -22,7 +22,7 @@ int udpConnect();
  * @return               [-1 em caso de erro 0 no caso de sucesso]
  */
 
-int udp_write_to(int udp_descriptor,char* mensage, int length,char * ip, int port);
+int udpWriteTo(int udp_descriptor,char* mensage, int length,char * ip, int port);
 
 
 

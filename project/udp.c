@@ -6,7 +6,7 @@
  * @param  udp_server_port [Porta do Servidor]
  * @return                [Return]
  */
-int udp_connect(){
+int udpConnect(){
 
   struct sockaddr_in server_addr;
   socklen_t len_endereco;
