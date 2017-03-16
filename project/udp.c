@@ -85,15 +85,12 @@ int udpWriteTo(int udp_descriptor,char * mensage, int length,char * ip, int port
  * @return               [nr_bytes lidos ou -1,-2 em casos de erro]
  */
 int udpRead(int udp_descriptor, char * buffer, int length){
-
+  int nread=0;
   //verificar argumentos
   if (udp_descriptor == -1 || buffer == NULL || length <= 0){
     return(-2);
   }
     /** pode haver aquui um erro se m_s.value_length > sizeof(value) **/
-  if(recv(udp_descriptor,buffer,length, 0)==-1){
-    return(-1);
-  }
-
-  return 0;
+  nread=recv(udp_descriptor,buffer,length, 0);
+  return nread;
 }
