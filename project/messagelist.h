@@ -8,8 +8,10 @@ typedef struct messageList_{
     char message[MESSAGESIZE]; // matrix of messages
     int lc; //
     struct messageList_ * next;
+    struct messageList_ * prev;
 }messageList;
 
-messageList * createMessageList();
-messageList * insertMessageListEnd(messageList * begin, char * message, int lc);
+void createMessageList(messageList ** begin, messageList ** end);
+void insertMessageListEnd(messageList ** begin,messageList ** end, char * message, int lc);
+char * getLastNmessages(messageList * end, int n);
 void printMessageList(messageList * begin);
