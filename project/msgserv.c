@@ -44,7 +44,7 @@ void printAllMessages(messageBox * m){
     int i;
     // cuidado se ja deu a volta ou nao
     for (i = 0; i < m->actual_pos; i++) {
-      printf("%s\n",m->messages[i]);
+      printf("%s",m->messages[i]);
     }
 }
 
@@ -52,7 +52,6 @@ void readRmb(int fdIdServer){
   char buffer[200];
   char command[50];
   int n = udpRead(fdIdServer,buffer,BUFFERSIZE);
-  printf("%s\n",buffer);
   sscanf(buffer,"%s",command);
   if(strcmp(command,"PUBLISH")==0){
     char message[140];
@@ -117,8 +116,6 @@ void keyboardRead(int fdIdServer){
       destructMessageBox(m);
       close(fdIdServer);
       exit(0);
-    }else if(strcmp("ler",command)==0){
-
     }else{
       printf("Unkown command\n");
     }
@@ -160,14 +157,7 @@ int main(int argc, char *argv[])
     // falta adicionar os opcionais
   }
 
-  // 1 -  Registar servidor de mensagens no sevidor de identidades
-  // 2 - interrogar o servido de mensagens sobre a identidade dos outros servidores de mensagens
-  //  e estabelecer TCP entre cada um destes
-  // Ir buscar todas as mensagens
-
-  // mudar isto para ir buscar o ip
   int fdIdServer = udpServer(5000);
-
 
   while(1){
     FD_ZERO(&rfds);
@@ -184,14 +174,7 @@ int main(int argc, char *argv[])
       readRmb(fdIdServer);
     }else if(FD_ISSET(1,&rfds)){
       keyboardRead(fdIdServer);
-      printf("Enter a command:  ");
     }
-
-
-
-
-
-
   }
 
 }
