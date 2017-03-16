@@ -1,44 +1,46 @@
 #include "messagelist.h"
 
 
-void createMessageList(messageList ** begin,messageList ** end){
-    *begin = NULL;
-    *end = NULL;
+messageList  * createMessageList(){
+    messageList  * m1 = malloc(sizeof(messageList));
+    m1->begin = NULL;
+    m1->end = NULL;
+    return m1;
 }
 
-void insertMessageListEnd(messageList ** begin,messageList ** end, char * message, int lc){
-    messageList * aux;
-    messageList * insertItem;
-    aux = *end;
+void insertMessageListEnd(messageList * m , char * message, int lc){
+    messageNode * aux;
+    messageNode * insertItem;
+    aux = m->end;
 
 
-    insertItem = (messageList *)malloc(sizeof(messageList));
+    insertItem = (messageNode *)malloc(sizeof(messageNode));
     strcpy(insertItem->message,message);
     insertItem->lc = lc;
     insertItem->next = NULL;
 
-    if(*begin == NULL){ // Empty List
-      *begin = insertItem;
+    if(m->begin == NULL){ // Empty List
+      m->begin = insertItem;
       insertItem->prev == NULL;
-      *end = insertItem;
+      m->end = insertItem;
     }else{
       aux->next = insertItem;
       insertItem->prev = aux;
-      *end = insertItem;
+      m->end = insertItem;
     }
 }
 
-void printMessageList(messageList * begin){
-    messageList * aux;
-    aux = begin;
+void printMessageList(messageList * m){
+    messageNode * aux;
+    aux = m->begin;
     while(aux != NULL){
         printf("%s",aux->message);
         aux = aux->next;
     }
 }
 
-char * getLastNmessages(messageList * end, int n){
-      messageList * aux = end;
+char * getLastNmessages(messageList * m, int n){
+      messageNode * aux = m->end;
       char * ret;
       char str[150];
       ret = malloc((9 + 141 * n) * sizeof(char));
@@ -50,7 +52,7 @@ char * getLastNmessages(messageList * end, int n){
           }
           aux=aux->prev;
       }
-      
+
       sprintf(ret,"MESSAGES\n");
       while(aux != NULL){
           sprintf(str,"%s\n",aux->message);
