@@ -2,51 +2,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include "udp.h"
-
+#include "messagelist.h"
 
 #define BUFFERSIZE 100
-#define MESSAGESIZE 140
-
-
 
 void wrongUse(){
   printf("Wrong Program Usage : msgserv –n name –j ip -u upt –t tpt [-i siip] [-p sipt] [–m m] [–r r] \n");
   //exit(-1);
 }
 
-typedef struct messageBox_{
-    int actual_pos; // actual first free position
-    char ** messages; // matrix of messages
-    int length; // max length off box
-}messageBox;
-
-messageBox * m;
-
-messageBox * createMessageBox(int length){
-      messageBox * m;
-      int i;
-      m = malloc(sizeof(messageBox));
-      m->actual_pos = 0;
-      m->length = length;
-      m->messages = malloc(length * sizeof(char *));
-      for(i=0;i<MESSAGESIZE;i++){
-        m->messages[i] = malloc(MESSAGESIZE * sizeof(char));
-      }
-      return m;
-}
-
-void saveMessage(messageBox * m ,char * message){
-     sprintf(m->messages[m->actual_pos],"%s",message);
-     m->actual_pos = m->actual_pos + 1;
-}
-
-void printAllMessages(messageBox * m){
-    int i;
-    // cuidado se ja deu a volta ou nao
-    for (i = 0; i < m->actual_pos; i++) {
-      printf("%s",m->messages[i]);
-    }
-}
+messageList * m;
 
 void readRmb(int fdIdServer){
   char buffer[200];
@@ -56,17 +21,8 @@ void readRmb(int fdIdServer){
   if(strcmp(command,"PUBLISH")==0){
     char message[140];
     strncpy(message, buffer+8, 140);
-    saveMessage(m,message);
+    m = insertMessageListEnd(m,message,-1);
   }
-}
-
-void destructMessageBox(messageBox * m){
-    int i;
-    for ( i = 0; i < m->length; i++) {
-      free(m->messages[i]);
-    }
-    free(m->messages);
-    free(m);
 }
 
 int udpServer(int port){
@@ -83,6 +39,7 @@ int udpServer(int port){
 }
 
 // isto ainda é para mudar
+
 char name[100];
 char ip[100];
 char upt[100];
@@ -106,14 +63,14 @@ void keyboardRead(int fdIdServer){
     if(strcmp("show_servers",command)==0){
       printf("Show Servers\n");
     }else if(strcmp("show_messages",command)==0){
-      printAllMessages(m);
+      printMessageList(m);
     }else if(strcmp("join",command)==0){
       sprintf(test_reg,"REG %s;%s;%s;%s",name,ip,upt,tpt);
       udpWriteTo(fdIdServer,test_reg,strlen(test_reg),ip_tejo,dns_port);
       // pode implementar-se um read para ver se foi registado com sucesso
       printf("Go Registar\n");
     }else if(strcmp("exit",command)==0){
-      destructMessageBox(m);
+      //destructMessageBox(m);
       close(fdIdServer);
       exit(0);
     }else{
@@ -121,14 +78,12 @@ void keyboardRead(int fdIdServer){
     }
   }
 }
+
 int main(int argc, char *argv[])
 {
-  char buffer[BUFFERSIZE];
-  char command[BUFFERSIZE];
 
   fd_set rfds;
-
-  m = createMessageBox(200);
+  m = createMessageList();
 
   // trocar a ordem disto, pode aparecer por outras ordens
   if(argc < 9){
