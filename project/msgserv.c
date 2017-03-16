@@ -11,17 +11,26 @@ void wrongUse(){
   //exit(-1);
 }
 
-messageList * m;
+messageList * mBegin, * mEnd;
 
 void readRmb(int fdIdServer){
   char buffer[200];
   char command[50];
-  int n = udpRead(fdIdServer,buffer,BUFFERSIZE);
+  struct sockaddr_in * addr_client;
+  int n = udpReadAndGetSender(fdIdServer,buffer,BUFFERSIZE,&addr_client);
   sscanf(buffer,"%s",command);
   if(strcmp(command,"PUBLISH")==0){
     char message[140];
     strncpy(message, buffer+8, 140);
-    m = insertMessageListEnd(m,message,-1);
+    insertMessageListEnd(&mBegin,&mEnd,message,-1);
+  }else if(strcmp(command,"GET_MESSAGES")==0){
+    int n_messages;
+    sscanf(buffer,"%s %d",command,&n_messages);
+    printf("GET_MESSAGES\n");
+    char * buffer_msg = getLastNmessages(mEnd,n_messages);
+    udpWriteToWithSockAddr(fdIdServer,buffer_msg,strlen(buffer_msg),*addr_client);
+    free(buffer_msg);
+    //udpWriteTo(fdIdServer,buffer,strlen(buffer),char * ip, int port);
   }
 }
 
@@ -63,7 +72,7 @@ void keyboardRead(int fdIdServer){
     if(strcmp("show_servers",command)==0){
       printf("Show Servers\n");
     }else if(strcmp("show_messages",command)==0){
-      printMessageList(m);
+      printMessageList(mBegin);
     }else if(strcmp("join",command)==0){
       sprintf(test_reg,"REG %s;%s;%s;%s",name,ip,upt,tpt);
       udpWriteTo(fdIdServer,test_reg,strlen(test_reg),ip_tejo,dns_port);
@@ -83,7 +92,7 @@ int main(int argc, char *argv[])
 {
 
   fd_set rfds;
-  m = createMessageList();
+  createMessageList(&mBegin,&mEnd);
 
   // trocar a ordem disto, pode aparecer por outras ordens
   if(argc < 9){
