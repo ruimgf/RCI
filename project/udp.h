@@ -39,3 +39,5 @@ int udpRead(int udp_descriptor, char * buffer, int length);
 int udpReadAndGetSender(int udp_descriptor, char * buffer, int length , struct sockaddr_in ** addr);
 
 int udpWriteToWithSockAddr(int udp_descriptor,char * mensage, int length,struct sockaddr_in server);
+
+int udpServer(int port);

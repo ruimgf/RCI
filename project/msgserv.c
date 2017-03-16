@@ -18,34 +18,33 @@ void readRmb(int fdIdServer){
   char command[50];
   struct sockaddr_in * addr_client;
   int n = udpReadAndGetSender(fdIdServer,buffer,BUFFERSIZE,&addr_client);
+
   sscanf(buffer,"%s",command);
+
   if(strcmp(command,"PUBLISH")==0){
     char message[140];
+
     strncpy(message, buffer+8, 140);
     insertMessageListEnd(&mBegin,&mEnd,message,-1);
+
   }else if(strcmp(command,"GET_MESSAGES")==0){
     int n_messages;
+    char * buffer_msg;
+
     sscanf(buffer,"%s %d",command,&n_messages);
-    printf("GET_MESSAGES\n");
-    char * buffer_msg = getLastNmessages(mEnd,n_messages);
+
+    buffer_msg = getLastNmessages(mEnd,n_messages);
+
     udpWriteToWithSockAddr(fdIdServer,buffer_msg,strlen(buffer_msg),*addr_client);
+
     free(buffer_msg);
     //udpWriteTo(fdIdServer,buffer,strlen(buffer),char * ip, int port);
   }
+  free(addr_client);
+
 }
 
-int udpServer(int port){
-  int fd = socket(AF_INET,SOCK_DGRAM,0);
-  struct sockaddr_in serveraddr;
 
-  memset((void*)&serveraddr,(int)'\0',sizeof(serveraddr));
-  serveraddr.sin_family = AF_INET;
-  serveraddr.sin_addr.s_addr = htonl(INADDR_ANY);
-  serveraddr.sin_port = htons((u_short)port);
-
-  bind(fd,(struct sockaddr*)&serveraddr,sizeof(serveraddr));
-  return fd;
-}
 
 // isto ainda é para mudar
 

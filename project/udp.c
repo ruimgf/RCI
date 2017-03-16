@@ -124,3 +124,16 @@ int udpWriteToWithSockAddr(int udp_descriptor,char * mensage, int length,struct 
     return 0;
 
 }
+
+int udpServer(int port){
+  int fd = socket(AF_INET,SOCK_DGRAM,0);
+  struct sockaddr_in serveraddr;
+
+  memset((void*)&serveraddr,(int)'\0',sizeof(serveraddr));
+  serveraddr.sin_family = AF_INET;
+  serveraddr.sin_addr.s_addr = htonl(INADDR_ANY);
+  serveraddr.sin_port = htons((u_short)port);
+
+  bind(fd,(struct sockaddr*)&serveraddr,sizeof(serveraddr));
+  return fd;
+}

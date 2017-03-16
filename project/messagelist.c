@@ -43,14 +43,14 @@ char * getLastNmessages(messageList * end, int n){
       char str[150];
       ret = malloc((9 + 141 * n) * sizeof(char));
       int i;
-      printf("1\n");
+
       for( i = 0 ; i < n - 1 ; i++){
           if(aux->prev==NULL){
             break;
           }
           aux=aux->prev;
       }
-      printf("2\n");
+      
       sprintf(ret,"MESSAGES\n");
       while(aux != NULL){
           sprintf(str,"%s\n",aux->message);
