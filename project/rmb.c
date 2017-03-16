@@ -16,10 +16,11 @@ char msgservIp[] = "127.0.0.1";
 
 
 typedef struct msgserv_{
-	char ip[16]; //endereço IP
-	int upt;     //port udp
-	int tpt;     //port tcp
-}msgserv
+	char ip[16];    //endereço IP
+	int upt;        //port udp
+	int tpt;        //port tcp
+	msgserv_* next;
+}msgserv;
 	 
 
 void help(){
@@ -47,6 +48,8 @@ void keyboardRead(char* siip, int siport)
 	char message[140];
 	int nread=0;
 	
+	msgserv msgservers[100];
+	
 	char * pos;
 
 	if(fgets(buffer, BUFFERSIZE , stdin) != NULL)
@@ -65,204 +68,25 @@ void keyboardRead(char* siip, int siport)
 			udpWriteTo(myFd, "GET_SERVERS", 11, siip, siport);
 			nread=udpRead(myFd, buffer, BUFFERSIZE);
 			write(1,buffer,nread);		
+			
+			//descarta o SERVERS \n
 			pos=strchr(buffer,'\n');
 			strcpy(buffercpy,&buffer[pos]);
 			while(strchr(buffer,'\n')!=NULL)
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
+			{
+				//descarta o name
+				pos=strchr(buffercpy,';');
+				strcp(buffercpy,&buffer[pos]);
+				
+				pos=strchr(buffercpy,';');
+				strcp(msgserv.ip,&buffer[pos]);
+				
+				pos=strchr(buffercpy,';');
+				strcp(msgserv.upt,&buffer[pos]);
+				
+				pos=strchr(buffercpy,';');
+				strcp(msgserv.tpt,&buffer[pos]);
+			}	
 		}
 		else if(strcmp("publish",command)==0)
 		{

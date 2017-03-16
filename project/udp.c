@@ -92,8 +92,5 @@ int udpRead(int udp_descriptor, char * buffer, int length){
   }
     /** pode haver aquui um erro se m_s.value_length > sizeof(value) **/
   nread=recv(udp_descriptor,buffer,length, 0);
-  if(nread==-1){
-    return(-1);
-  }
   return nread;
 }
