@@ -35,3 +35,7 @@ int udpWriteTo(int udp_descriptor,char* mensage, int length,char * ip, int port)
  * @return               [nr_bytes lidos ou -1,-2 em casos de erro]
  */
 int udpRead(int udp_descriptor, char * buffer, int length);
+
+int udpReadAndGetSender(int udp_descriptor, char * buffer, int length , struct sockaddr_in ** addr);
+
+int udpWriteToWithSockAddr(int udp_descriptor,char * mensage, int length,struct sockaddr_in server);

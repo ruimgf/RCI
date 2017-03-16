@@ -85,12 +85,42 @@ int udpWriteTo(int udp_descriptor,char * mensage, int length,char * ip, int port
  * @return               [nr_bytes lidos ou -1,-2 em casos de erro]
  */
 int udpRead(int udp_descriptor, char * buffer, int length){
-  int nread=0;
+  struct sockaddr_in addr;
+  int nread=0, addrlen;
   //verificar argumentos
   if (udp_descriptor == -1 || buffer == NULL || length <= 0){
     return(-2);
   }
     /** pode haver aquui um erro se m_s.value_length > sizeof(value) **/
-  nread=recv(udp_descriptor,buffer,length, 0);
+
+  nread=recvfrom(udp_descriptor,buffer,length,0,(struct sockaddr*)&addr,&addrlen);
   return nread;
+}
+
+
+int udpReadAndGetSender(int udp_descriptor, char * buffer, int length , struct sockaddr_in ** addr){
+  struct sockaddr_in * addr_aux = malloc(sizeof(struct sockaddr_in));
+  *addr = addr_aux;
+  int nread=0, addrlen;
+  //verificar argumentos
+  if (udp_descriptor == -1 || buffer == NULL || length <= 0){
+    return(-2);
+  }
+
+  nread=recvfrom(udp_descriptor,buffer,length,0,(struct sockaddr*)addr_aux,&addrlen);
+  return nread;
+}
+
+
+int udpWriteToWithSockAddr(int udp_descriptor,char * mensage, int length,struct sockaddr_in server){
+    //verificar argumentos
+    size_t slen = sizeof(server);
+    if (udp_descriptor == -1 || mensage == NULL || length <= 0){
+      return(-2);
+    }
+
+    sendto(udp_descriptor,mensage, length, 0, (struct sockaddr*) &server, slen);
+
+    return 0;
+
 }
