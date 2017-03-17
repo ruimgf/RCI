@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MESSAGESIZE 140
+#define MESSAGESIZE 141
 
 typedef struct messageNode_{
     char message[MESSAGESIZE]; // matrix of messages

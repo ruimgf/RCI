@@ -15,11 +15,14 @@ void insertMessageListEnd(messageList * m , char * message, int lc){
 
 
     insertItem = (messageNode *)malloc(sizeof(messageNode));
+
     strcpy(insertItem->message,message);
     insertItem->lc = lc;
     insertItem->next = NULL;
 
+
     if(m->begin == NULL){ // Empty List
+    
       m->begin = insertItem;
       insertItem->prev = NULL;
       m->end = insertItem;
@@ -34,7 +37,7 @@ void printMessageList(messageList * m){
     messageNode * aux;
     aux = m->begin;
     while(aux != NULL){
-        printf("%s",aux->message);
+        printf("%s\n",aux->message);
         aux = aux->next;
     }
 }

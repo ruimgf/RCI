@@ -4,27 +4,35 @@
 #include "udp.h"
 #include "messagelist.h"
 
-#define BUFFERSIZE 100
+#define BUFFERSIZE 2000
 
 void wrongUse(){
   printf("Wrong Program Usage : msgserv –n name –j ip -u upt –t tpt [-i siip] [-p sipt] [–m m] [–r r] \n");
-  //exit(-1);
+  exit(-1);
 }
 
 messageList * m;
 
 void readRmb(int fdIdServer){
-  char buffer[200];
+  char buffer[BUFFERSIZE];
   char command[50];
   struct sockaddr_in * addr_client;
   int n = udpReadAndGetSender(fdIdServer,buffer,BUFFERSIZE,&addr_client);
+  // if rmb send \0 or not i will not have problems with str functions
+  if(n == -1){
+    printf("erro n\n");
+    exit(-2);
+  }
   buffer[n] = '\0';
+
   sscanf(buffer,"%s",command);
 
   if(strcmp(command,"PUBLISH")==0){
-    char message[140];
+    char message[141];
 
     strncpy(message, buffer+8, 140);
+    message[140] = '\0';
+  
     insertMessageListEnd(m,message,-1);
 
   }else if(strcmp(command,"GET_MESSAGES")==0){
@@ -65,6 +73,10 @@ void keyboardRead(int fdIdServer){
     size_t ln = strlen(buffer)-1;
     if (buffer[ln] == '\n'){
         buffer[ln] = '\0';
+    }
+    if(ln == 0){
+      printf("Unkown command\n");
+      return;
     }
     sscanf(buffer,"%s",command);
 
@@ -131,11 +143,13 @@ int main(int argc, char *argv[])
 
     counter=select(fdIdServer+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,(struct timeval *)NULL);
 
-    if(counter<=0)exit(1);//errror
+    if(counter<=0)
+      exit(1);//errror
 
     if(FD_ISSET(fdIdServer,&rfds)){
       readRmb(fdIdServer);
-    }else if(FD_ISSET(1,&rfds)){
+    }
+    if(FD_ISSET(1,&rfds)){
       keyboardRead(fdIdServer);
     }
   }
