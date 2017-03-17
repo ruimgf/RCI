@@ -18,7 +18,7 @@ void readRmb(int fdIdServer){
   char command[50];
   struct sockaddr_in * addr_client;
   int n = udpReadAndGetSender(fdIdServer,buffer,BUFFERSIZE,&addr_client);
-
+  buffer[n] = '\0';
   sscanf(buffer,"%s",command);
 
   if(strcmp(command,"PUBLISH")==0){
