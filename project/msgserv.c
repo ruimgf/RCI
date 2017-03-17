@@ -78,7 +78,7 @@ void keyboardRead(int fdIdServer){
       // pode implementar-se um read para ver se foi registado com sucesso
       printf("Go Registar\n");
     }else if(strcmp("exit",command)==0){
-      //destructMessageBox(m);
+      freeMessageList(m);
       close(fdIdServer);
       exit(0);
     }else{

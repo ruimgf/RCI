@@ -20,3 +20,4 @@ messageList  *  createMessageList();
 void insertMessageListEnd(messageList * m, char * message, int lc);
 char * getLastNmessages(messageList * m, int n);
 void printMessageList(messageList * m);
+void freeMessageList(messageList * m);

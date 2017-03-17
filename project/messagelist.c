@@ -21,7 +21,7 @@ void insertMessageListEnd(messageList * m , char * message, int lc){
 
     if(m->begin == NULL){ // Empty List
       m->begin = insertItem;
-      insertItem->prev == NULL;
+      insertItem->prev = NULL;
       m->end = insertItem;
     }else{
       aux->next = insertItem;
@@ -61,6 +61,17 @@ char * getLastNmessages(messageList * m, int n){
       }
 
       return ret;
+}
 
+void freeMessageList(messageList * m){
+    messageNode * aux = m->begin;
+    messageNode * aux1;
+
+    while(aux != NULL){
+      aux1 = aux-> next;
+      free(aux);
+      aux = aux1;
+    }
+    free(m);
 
 }
