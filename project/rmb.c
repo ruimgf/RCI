@@ -19,7 +19,6 @@ typedef struct msgserv_{
 	char ip[16];    //endereço IP
 	int upt;        //port udp
 	int tpt;        //port tcp
-	msgserv_* next;
 }msgserv;
 	 
 
@@ -43,14 +42,15 @@ int publishMessage(char* message){
 void keyboardRead(char* siip, int siport)
 {
 	char buffer[BUFFERSIZE];
-	char buffercpy[BUFFERSIZE];
 	char command[30];
 	char message[140];
 	int nread=0;
+	int n_str=0;
 	
 	msgserv msgservers[100];
 	
-	char * pos;
+	char * str;
+	char * str2;
 
 	if(fgets(buffer, BUFFERSIZE , stdin) != NULL)
 	{
@@ -67,26 +67,35 @@ void keyboardRead(char* siip, int siport)
 			
 			udpWriteTo(myFd, "GET_SERVERS", 11, siip, siport);
 			nread=udpRead(myFd, buffer, BUFFERSIZE);
+			
 			write(1,buffer,nread);		
 			
+			
 			//descarta o SERVERS \n
-			pos=strchr(buffer,'\n');
-			strcpy(buffercpy,&buffer[pos]);
-			while(strchr(buffer,'\n')!=NULL)
+			str=strchr(buffer,'\n');
+			str++;
+			//printf("str: %s\n", str);
+					
+			
+			int i=0;
+			
+			/*while(strstr(str,"\n\n") != NULL)
 			{
+				
 				//descarta o name
-				pos=strchr(buffercpy,';');
-				strcp(buffercpy,&buffer[pos]);
+				str=strchr(str,';');
+				str++;
+				printf("str: %s\n", str);
+				//ip
+				str2=strchr(str,';');
 				
-				pos=strchr(buffercpy,';');
-				strcp(msgserv.ip,&buffer[pos]);
-				
-				pos=strchr(buffercpy,';');
-				strcp(msgserv.upt,&buffer[pos]);
-				
-				pos=strchr(buffercpy,';');
-				strcp(msgserv.tpt,&buffer[pos]);
-			}	
+				n_str = strlen(str)-strlen(str2);
+				str=str2;
+				printf("n_str: %d\n", n_str);
+				strncpy(msgservers[i].ip,str2,n_str);	
+				printf("ip: %s\n", msgservers[i].ip);
+				i++;
+			}*/
 		}
 		else if(strcmp("publish",command)==0)
 		{
