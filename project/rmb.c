@@ -22,10 +22,10 @@ typedef struct msgserv_{
 	int upt;        //port udp
 	int tpt;        //port tcp
 }msgserv;
-	 
+
 
 void help(){
-	
+
 	printf(" RMB APP COMMANDS\n");
 	printf(" show_servers             -identities of registed message servers \n");
 	printf(" publish message          -text message publication with 140 characters maximum \n");
@@ -50,77 +50,83 @@ void keyboardRead(char* siip, int siport)
 	int len=0;
 	char port[10];
 	char * str, * str2;
-	
+
 	msgserv msgservers[100];
-	
+
 	if(fgets(buffer, BUFFERSIZE , stdin) != NULL)
 	{
 		// Retirar \n da linha lida
 		size_t ln = strlen(buffer)-1;
 		if (buffer[ln] == '\n')
 			buffer[ln] = '\0';
-		
+
 		sscanf(buffer,"%s",command);
 
 		if(strcmp("show_servers",command)==0)
 		{
 			printf("Show Servers\n");
-			
+
 			if ((len=udpWriteTo(myFd, "GET_SERVERS", 11, siip, siport)) >= 0)
 			{
 				printf ("UDP WRITE BYTES: %d\n", len);
 				nread=udpRead(myFd, buffer, BUFFERSIZE);
-				
+
 				if (nread >= 0)
 				{
 					printf("go clean");
 					//write(1,buffer,nread);
 					buffer[nread] = '\0';
 					printf("NREAD: %d, BUFFER: %s", nread, buffer);
-					
+
 					//descarta o SERVERS
 					str=strchr(buffer,LINE_SEP);
 					printf("%s", str);
-						
-					
+
+
 					int i=0;
-					while((str=strchr(str,FIELD_SEP))!=NULL)
+					while((str=strchr(str,LINE_SEP))!=NULL)
 					{
 					printf ("WHILE\n");
 						// Descarta o nome
+
+
 						str = strchr(str,FIELD_SEP);
+						if(str == NULL) // Fim de tudo
+							break;
+
 						str++;
-						
+
 						// IP
 						str2 = strchr(str,FIELD_SEP);
-						if(!str2) // Mensagem mal definida
+						
+						if(str2  == NULL) // Mensagem mal definida
 							break;
-						len = strlen(str) - strlen(str2);
+
+						len = strlen(str)-strlen(str2);
 						strncpy(msgservers[i].ip,str,len);
 						msgservers[i].ip[len] = '\0';
-						
+
 						// UDP
-						str=++str2;				
+						str=++str2;
 						str2=strchr(str,FIELD_SEP);
-						if(!str2) // Mensagem mal definida
+						if(str2 == NULL) // Mensagem mal definida
 							break;
-						len = strlen(str) - strlen(str2);
+						len = strlen(str)-strlen(str2);
 						strncpy(port,str,len);
 						port[len]='\0';
 						msgservers[i].upt = atoi(port);
-													
+
 						// TCP
-						str=++str2;				
-						str2=strchr(str,FIELD_SEP);
-						if(!str2) // Mensagem mal definida
-							break;
-						len = strlen(str) - strlen(str2);
-						strncpy(port,str,len);
-						port[len]='\0';		
-						msgservers[i].tpt = atoi(port);
-						
-						printf("Servidor %d - IP: %s,\t UDP: %d,\t TCP: %d\n",i,msgservers[i].ip,msgservers[i].upt,msgservers[i].tpt); 
 						str=++str2;
+						str2=strchr(str,LINE_SEP);
+						if(str2 == NULL) // Mensagem mal definida
+							break;
+						len = strlen(str)-strlen(str2);
+						strncpy(port,str,len);
+						port[len]='\0';
+						msgservers[i].tpt = atoi(port);
+
+						printf("Servidor %d - IP: %s,\t UDP: %d,\t TCP: %d\n",i,msgservers[i].ip,msgservers[i].upt,msgservers[i].tpt);
 						i++;
 					}
 				}
@@ -154,15 +160,15 @@ void keyboardRead(char* siip, int siport)
 }
 
 void siPortIp(char* siip, int* sipt)
-{	
+{
 	struct hostent *serverid;
 	struct in_addr *serverid_ip;
 	if((serverid=gethostbyname("tejo.tecnico.ulisboa.pt"))==NULL)
 		exit(1);
 	serverid_ip=(struct in_addr*)serverid->h_addr_list[0];
-	
+
 	sprintf(siip,"%s",inet_ntoa(*serverid_ip));
-	*sipt = 59000;	
+	*sipt = 59000;
 }
 
 
@@ -170,7 +176,7 @@ int main(int argc, char ** argv){
 
 	char siip[16];
 	int sipt;
-	
+
 	if (argc>1)
 	{
 		if(strcmp(argv[1],"-i")==0 && strcmp(argv[3],"-p")==0)
@@ -183,24 +189,24 @@ int main(int argc, char ** argv){
 			strcpy(siip,argv[2]);
 			sipt=atoi(argv[4]);
 		}
-		else 
+		else
 		{
 			printf("ERROR: wrong application usage \n");
 			printf("rmb [-i siip] [-p sipt]\n");
 			exit(0);
-		}	
+		}
 	}
 	else
 	{
-		siPortIp(siip,&sipt);	
+		siPortIp(siip,&sipt);
 		printf("identity server ip: %s \n",siip);
-		printf("identity server port: %d \n",sipt);		 
+		printf("identity server port: %d \n",sipt);
 	}
 
 	myFd = udpConnect();
 	if(myFd == -1)
 		printf("ERROR in udp connection");
-  
+
 	// mandar mensagem para ir buscar os servidores
 	printf("Enter a command:  ");
 	while(1){

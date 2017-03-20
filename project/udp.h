@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
-
+#include <string.h>
 /**
  * [udp_connect Realiza uma nova conexão ao servidor]
  * @param  udp_server_ip   [Endereço do Servidor]
