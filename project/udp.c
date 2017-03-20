@@ -71,9 +71,9 @@ int udpWriteTo(int udp_descriptor,char * mensage, int length,char * ip, int port
       return(-2);
     }
 
-    sendto(udp_descriptor,mensage, length, 0, (struct sockaddr*) &server, slen);
+    return sendto(udp_descriptor,mensage, length, 0, (struct sockaddr*) &server, slen);
 
-    return 0;
+    //return 0;
 
 }
 

@@ -7,7 +7,9 @@
 #include <arpa/inet.h>
 #include "udp.h"
 
-#define BUFFERSIZE 1024
+#define BUFFERSIZE 3000
+#define FIELD_SEP ';'
+#define LINE_SEP '\n'
 
 // global variables
 int myFd;
@@ -45,13 +47,12 @@ void keyboardRead(char* siip, int siport)
 	char command[30];
 	char message[140];
 	int nread=0;
-	int n_str=0;
+	int len=0;
+	char port[10];
+	char * str, * str2;
 	
 	msgserv msgservers[100];
 	
-	char * str;
-	char * str2;
-
 	if(fgets(buffer, BUFFERSIZE , stdin) != NULL)
 	{
 		// Retirar \n da linha lida
@@ -65,37 +66,63 @@ void keyboardRead(char* siip, int siport)
 		{
 			printf("Show Servers\n");
 			
-			udpWriteTo(myFd, "GET_SERVERS", 11, siip, siport);
-			nread=udpRead(myFd, buffer, BUFFERSIZE);
-			
-			write(1,buffer,nread);		
-			
-			
-			//descarta o SERVERS \n
-			str=strchr(buffer,'\n');
-			str++;
-			//printf("str: %s\n", str);
-					
-			
-			int i=0;
-			
-			/*while(strstr(str,"\n\n") != NULL)
+			if ((len=udpWriteTo(myFd, "GET_SERVERS", 11, siip, siport)) >= 0)
 			{
-				
-				//descarta o name
-				str=strchr(str,';');
-				str++;
-				printf("str: %s\n", str);
-				//ip
-				str2=strchr(str,';');
-				
-				n_str = strlen(str)-strlen(str2);
-				str=str2;
-				printf("n_str: %d\n", n_str);
-				strncpy(msgservers[i].ip,str2,n_str);	
-				printf("ip: %s\n", msgservers[i].ip);
-				i++;
-			}*/
+				printf ("UDP WRITE BYTES: %d\n", len);
+				nread=udpRead(myFd, buffer, BUFFERSIZE);
+				if (nread >= 0)
+				{
+					//write(1,buffer,nread);
+					buffer[nread] = '\0';
+					printf("NREAD: %d, BUFFER: %s", nread, buffer);
+					
+					//descarta o SERVERS
+					str=strchr(buffer,LINE_SEP);
+					printf("%s", str);
+						
+					
+					int i=0;
+					while(str && !strchr(str,FIELD_SEP))
+					{
+					printf ("WHILE\n");
+						// Descarta o nome
+						str = strchr(str,FIELD_SEP);
+						str++;
+						
+						// IP
+						str2 = strchr(str,FIELD_SEP);
+						if(!str2) // Mensagem mal definida
+							break;
+						len = strlen(str) - strlen(str2);
+						strncpy(msgservers[i].ip,str,len);
+						msgservers[i].ip[len] = '\0';
+						
+						// UDP
+						str=++str2;				
+						str2=strchr(str,FIELD_SEP);
+						if(!str2) // Mensagem mal definida
+							break;
+						len = strlen(str) - strlen(str2);
+						strncpy(port,str,len);
+						port[len]='\0';
+						msgservers[i].upt = atoi(port);
+													
+						// TCP
+						str=++str2;				
+						str2=strchr(str,FIELD_SEP);
+						if(!str2) // Mensagem mal definida
+							break;
+						len = strlen(str) - strlen(str2);
+						strncpy(port,str,len);
+						port[len]='\0';		
+						msgservers[i].tpt = atoi(port);
+						
+						printf("Servidor %d - IP: %s,\t UDP: %d,\t TCP: %d\n",i,msgservers[i].ip,msgservers[i].upt,msgservers[i].tpt); 
+						str=++str2;
+						i++;
+					}
+				}
+			}
 		}
 		else if(strcmp("publish",command)==0)
 		{
@@ -123,7 +150,6 @@ void keyboardRead(char* siip, int siport)
 	}
 	printf("Enter a command: ");
 }
-
 
 void siPortIp(char* siip, int* sipt)
 {	
