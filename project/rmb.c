@@ -70,8 +70,10 @@ void keyboardRead(char* siip, int siport)
 			{
 				printf ("UDP WRITE BYTES: %d\n", len);
 				nread=udpRead(myFd, buffer, BUFFERSIZE);
+				
 				if (nread >= 0)
 				{
+					printf("go clean");
 					//write(1,buffer,nread);
 					buffer[nread] = '\0';
 					printf("NREAD: %d, BUFFER: %s", nread, buffer);
@@ -82,7 +84,7 @@ void keyboardRead(char* siip, int siport)
 						
 					
 					int i=0;
-					while(str && !strchr(str,FIELD_SEP))
+					while((str=strchr(str,FIELD_SEP))!=NULL)
 					{
 					printf ("WHILE\n");
 						// Descarta o nome
