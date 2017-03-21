@@ -3,8 +3,11 @@
 #include <string.h>
 #include "udp.h"
 #include "messagelist.h"
+#include <time.h>
+
 
 #define BUFFERSIZE 2000
+#define REFRESH_RATE 5
 
 void wrongUse(){
   printf("Wrong Program Usage : msgserv –n name –j ip -u upt –t tpt [-i siip] [-p sipt] [–m m] [–r r] \n");
@@ -12,6 +15,7 @@ void wrongUse(){
 }
 
 messageList * m;
+char test_reg[100];
 
 void readRmb(int fdIdServer){
   char buffer[BUFFERSIZE];
@@ -32,7 +36,7 @@ void readRmb(int fdIdServer){
 
     strncpy(message, buffer+8, 140);
     message[140] = '\0';
-  
+
     insertMessageListEnd(m,message,-1);
 
   }else if(strcmp(command,"GET_MESSAGES")==0){
@@ -62,7 +66,7 @@ char upt[100];
 char tpt[100];
 char ip_tejo[]  = "193.136.138.142";
 int dns_port = 59000;
-char test_reg[100];
+
 
 void keyboardRead(int fdIdServer){
   char buffer[BUFFERSIZE];
@@ -104,7 +108,7 @@ int main(int argc, char *argv[])
 
   fd_set rfds;
   m = createMessageList();
-
+  time_t select_ini, select_end;
   // trocar a ordem disto, pode aparecer por outras ordens
   if(argc < 9){
     wrongUse();
@@ -134,6 +138,11 @@ int main(int argc, char *argv[])
 
   int fdIdServer = udpServer(5000);
 
+  select_ini = time(0);
+  struct timeval tr;
+  tr.tv_usec = 0;
+  select_end = select_ini;
+  tr.tv_sec = REFRESH_RATE;
   while(1){
     FD_ZERO(&rfds);
     FD_SET(fdIdServer,&rfds);
@@ -141,17 +150,32 @@ int main(int argc, char *argv[])
     int maxfd=fdIdServer;
     int counter;
 
-    counter=select(fdIdServer+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,(struct timeval *)NULL);
-
-    if(counter<=0)
+    
+    counter=select(fdIdServer+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tr);
+    select_end = time(0);
+    if(select_end - select_ini >= REFRESH_RATE){
+      select_ini = time(0);
+      sprintf(test_reg,"REG %s;%s;%s;%s",name,ip,upt,tpt);
+      int n = udpWriteTo(fdIdServer,test_reg,strlen(test_reg),ip_tejo,dns_port);
+      printf("SEND REG %d\n",n);
+      tr.tv_sec = REFRESH_RATE;
+    }else{
+      tr.tv_sec = REFRESH_RATE - (select_end - select_ini);
+    }
+    if(counter<0){
       exit(1);//errror
+    }
 
-    if(FD_ISSET(fdIdServer,&rfds)){
-      readRmb(fdIdServer);
+    if(counter > 0 ){
+      if(FD_ISSET(fdIdServer,&rfds)){
+        readRmb(fdIdServer);
+      }
+      if(FD_ISSET(1,&rfds)){
+        keyboardRead(fdIdServer);
+      }
     }
-    if(FD_ISSET(1,&rfds)){
-      keyboardRead(fdIdServer);
-    }
+
+
   }
 
 }
