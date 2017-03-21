@@ -7,6 +7,38 @@
 #include <unistd.h>
 
 
+int tcpBindListen(int server_port){
+  int fd;
+  struct sockaddr_in addr;
+  if((fd=socket(AF_INET,SOCK_STREAM,0))==-1)
+      exit(1);//error
+
+
+  memset((void*)&addr,(int)'\0',sizeof(addr));
+  addr.sin_family=AF_INET;
+  addr.sin_addr.s_addr=htonl(INADDR_ANY);
+  addr.sin_port=htons(server_port);
+
+  if(bind(fd,(struct sockaddr*)&addr,sizeof(addr))==-1){
+      printf("Erro no Bind\n");
+      exit(1);//error
+  }
+
+
+  if(listen(fd,5)==-1)
+    exit(1);//error
+
+  return fd;
+}
+
+int tcpAccept(int myFd){
+    int newFd,addrlen;
+    struct sockaddr_in addr;
+    addrlen=sizeof(addr);
+    if((newFd=accept(myFd,(struct sockaddr*)&addr,&addrlen))==-1)
+      exit(1);
+    return newFd;
+}
 
 /**
  * [tcp_connect Realiza uma nova conexão ao servidor]
@@ -14,7 +46,7 @@
  * @param  tcp_server_port [Porta do Servidor]
  * @return                [Return]
  */
-int tcp_connect(char * server_ip, int server_port){
+int tcpConnect(char * server_ip, int server_port){
 
 
   struct sockaddr_in server_addr;
@@ -36,11 +68,10 @@ int tcp_connect(char * server_ip, int server_port){
   server_addr.sin_port = htons(server_port);
 
   if (inet_aton(server_ip, &server_addr.sin_addr) == 0){
-
       printf("invalid address\n");
   }
-
-  err = connect(sock_fd, (const struct sockaddr *) &server_addr,sizeof(server_addr));
+  len_endereco = sizeof(server_addr);
+  err = connect(sock_fd, (const struct sockaddr *) &server_addr,len_endereco);
 
   if (err == -1){
     printf("conn error\n");
@@ -54,7 +85,7 @@ int tcp_connect(char * server_ip, int server_port){
  * [tcp_close Termina a ligação entre cliente e servidor]
  * @param tcp_descriptor [Indentificador do servidor]
  */
-void tcp_close(int tcp_descriptor){
+void tcpClose(int tcp_descriptor){
 
   if (tcp_descriptor == -1 ){
     return;
@@ -68,7 +99,7 @@ void tcp_close(int tcp_descriptor){
  * @param  mensage           [chave]
  * @return               [-1 em caso de erro 0 no caso de sucesso]
  */
-int tcp_write(int tcp_descriptor,char * mensage, int length){
+int tcpWrite(int tcp_descriptor,char * mensage, int length){
     char buffer[100];
     //verificar argumentos
     if (tcp_descriptor == -1 || mensage == NULL || length <= 0){
@@ -91,7 +122,7 @@ int tcp_write(int tcp_descriptor,char * mensage, int length){
  * @param  length  [tamanho para receber valor]
  * @return               [nr_bytes lidos ou -1,-2 em casos de erro]
  */
-int tcp_read(int tcp_descriptor, char * buffer, int length){
+int tcpRead(int tcp_descriptor, char * buffer, int length){
 
   //verificar argumentos
   if (tcp_descriptor == -1 || buffer == NULL || length <= 0){
