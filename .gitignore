@@ -1,3 +1,4 @@
 *.o
 msgserv
 rmb
+.DS_Store

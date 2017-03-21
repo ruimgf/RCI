@@ -22,7 +22,7 @@ void insertMessageListEnd(messageList * m , char * message, int lc){
 
 
     if(m->begin == NULL){ // Empty List
-    
+
       m->begin = insertItem;
       insertItem->prev = NULL;
       m->end = insertItem;
@@ -37,7 +37,7 @@ void printMessageList(messageList * m){
     messageNode * aux;
     aux = m->begin;
     while(aux != NULL){
-        printf("%s\n",aux->message);
+        printf("%s %d\n",aux->message,aux->lc);
         aux = aux->next;
     }
 }
