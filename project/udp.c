@@ -1,23 +1,16 @@
 #include "udp.h"
 
-/**
- * [udp_connect Realiza uma nova conexão ao servidor]
- * @param  udp_server_ip   [Endereço do Servidor]
- * @param  udp_server_port [Porta do Servidor]
- * @return                [Return]
- */
-int udpConnect(){
-
+int udpSockect()
+{
   struct sockaddr_in server_addr;
   socklen_t len_endereco;
   int err;
 
   int sock_fd = socket(AF_INET, SOCK_DGRAM, 0);
 
-  if (sock_fd == -1){
+  if (sock_fd == -1)
     return(-1);
-  }
-  /*
+    /*
   if(server_ip == NULL || server_port <= 0){
     return(-2);
   }
@@ -40,25 +33,15 @@ int udpConnect(){
   return(sock_fd);
 }
 
-/**
- * [udp_close Termina a ligação entre cliente e servidor]
- * @param udp_descriptor [Indentificador do servidor]
- */
-void udpClose(int udp_descriptor){
-
-  if (udp_descriptor == -1 ){
+void udpClose(int udp_descriptor)
+{
+  if (udp_descriptor == -1 )
     return;
-  }
   close(udp_descriptor);
-
 }
-/**
- * [udp_write Trata operções de escrita por parte dos clientes]
- * @param  udp_descriptor [identificador do servidor]
- * @param  mensage           [chave]
- * @return               [-1 em caso de erro 0 no caso de sucesso]
- */
-int udpWriteTo(int udp_descriptor,char * mensage, int length,char * ip, int port){
+
+int udpWriteTo(int udp_descriptor,char * mensage, int length,char * ip, int port)
+{
     char buffer[100];
     //verificar argumentos
     struct sockaddr_in server;
@@ -67,34 +50,24 @@ int udpWriteTo(int udp_descriptor,char * mensage, int length,char * ip, int port
     server.sin_port = htons(port);
 
     inet_aton(ip, &server.sin_addr);
-    if (udp_descriptor == -1 || mensage == NULL || length <= 0  || ip == NULL || port < 0){
+    if (udp_descriptor == -1 || mensage == NULL || length <= 0  || ip == NULL || port < 0)
       return(-2);
-    }
-
+    
     return sendto(udp_descriptor,mensage, length, 0, (struct sockaddr*) &server, slen);
-
-    //return 0;
-
 }
 
-/**
- * [udp_read operação leitura por parte do cliente]
- * @param  udp_descriptor [identificador do servidor]
- * @param  buffers           [chave]
- * @param  length  [tamanho para receber valor]
- * @return               [nr_bytes lidos ou -1,-2 em casos de erro]
- */
-int udpRead(int udp_descriptor, char * buffer, int length){
+int udpRead(int udp_descriptor, char * buffer, int length)
+{
   struct sockaddr_in addr;
   int nread=0, addrlen;
-  //verificar argumentos
-  if (udp_descriptor == -1 || buffer == NULL || length <= 0){
-    return(-2);
-  }
-    /** pode haver aquui um erro se m_s.value_length > sizeof(value) **/
 
-  nread=recvfrom(udp_descriptor,buffer,length,0,(struct sockaddr*)&addr,&addrlen);
-  return nread;
+  addrlen = sizeof(addr);	
+  //verificar argumentos
+  if (udp_descriptor == -1 || buffer == NULL || length <= 0)
+    return(-2);
+
+    /** pode haver aquui um erro se m_s.value_length > sizeof(value) **/
+  return recvfrom(udp_descriptor,buffer,length,0,(struct sockaddr*)&addr,&addrlen);
 }
 
 
