@@ -2,20 +2,122 @@
 #include <stdlib.h>
 #include <string.h>
 #include "udp.h"
+#include "tcp.h"
 #include "messagelist.h"
+#include "fdlist.h"
 #include <time.h>
 
-
+#define FIELD_SEP ';'
+#define LINE_SEP '\n'
 #define BUFFERSIZE 2000
 #define REFRESH_RATE 5
+
+typedef struct msgserv_{
+	char ip[16];    //endereço IP
+	int upt;        //port udp
+	int tpt;        //port tcp
+}msgserv;
+
+msgserv msgservers[100];
+int num_msgservs = 0;
+// Global Variables
+messageList * m;
+char test_reg[100];
+int lc = 0;
+char name[100];
+char ip[100];
+char upt[100];
+char tpt[100];
+char siip[]  = "127.0.0.1";
+int sipt = 59000;
+
+void getServers(int myFd)
+{
+	int len=0;
+	char port_udp[10],port_tcp[10];
+	char * str, * str2;
+	int nread;
+  num_msgservs = 0;
+  char buffer[BUFFERSIZE];
+	if ((len=udpWriteTo(myFd, "GET_SERVERS", 11, siip, sipt)) >= 0)
+	{
+		printf ("UDP WRITE BYTES: %d\n", len);
+		nread=udpRead(myFd, buffer, BUFFERSIZE);
+
+		if (nread >= 0)
+		{
+			//printf("go clean");
+			//write(1,buffer,nread);
+			buffer[nread] = '\0';
+			//printf("NREAD: %d, BUFFER: %s", nread, buffer);
+
+			//descarta o SERVERS
+			str=strchr(buffer,LINE_SEP);
+
+
+			while((str=strchr(str,LINE_SEP)))
+			{
+				// Descarta o nome
+				str = strchr(str,FIELD_SEP);
+				if(!str) // Fim de tudo
+					break;
+				str++;
+
+				// IP
+				str2 = strchr(str,FIELD_SEP);
+				if(!str2) // Mensagem mal definida
+					break;
+
+				len = strlen(str)-strlen(str2);
+				strncpy(msgservers[num_msgservs].ip,str,len);
+				msgservers[num_msgservs].ip[len] = '\0';
+
+				// UDP
+				str=++str2;
+				str2=strchr(str,FIELD_SEP);
+				if(!str2) // Mensagem mal definida
+					break;
+				len = strlen(str)-strlen(str2);
+				strncpy(port_udp,str,len);
+				port_udp[len]='\0';
+
+
+				// TCP
+				str=++str2;
+				str2=strchr(str,LINE_SEP);
+				if(!str2) // Mensagem mal definida
+					break;
+
+				len = strlen(str)-strlen(str2);
+				strncpy(port_tcp,str,len);
+				port_tcp[len]='\0';
+
+				msgservers[num_msgservs].upt = atoi(port_udp);
+				msgservers[num_msgservs].tpt = atoi(port_tcp);
+
+				// Copia mensagem só no fim de todos os campos lidos
+				// To DO ...
+
+				printf("Servidor %d - IP: %s,\t UDP: %d,\t TCP: %d\n",num_msgservs,msgservers[num_msgservs].ip,msgservers[num_msgservs].upt,msgservers[num_msgservs].tpt);
+				num_msgservs++;
+			}
+		}
+	}
+}
+
+
+
+int max(int x, int y){
+    if(x>y)
+      return x;
+    return y;
+}
 
 void wrongUse(){
   printf("Wrong Program Usage : msgserv –n name –j ip -u upt –t tpt [-i siip] [-p sipt] [–m m] [–r r] \n");
   exit(-1);
 }
 
-messageList * m;
-char test_reg[100];
 
 void readRmb(int fdIdServer){
   char buffer[BUFFERSIZE];
@@ -28,7 +130,10 @@ void readRmb(int fdIdServer){
     exit(-2);
   }
   buffer[n] = '\0';
-
+  size_t ln = strlen(buffer)-1;
+  if (buffer[ln] == '\n'){
+      buffer[ln] = '\0';
+  }
   sscanf(buffer,"%s",command);
 
   if(strcmp(command,"PUBLISH")==0){
@@ -37,7 +142,9 @@ void readRmb(int fdIdServer){
     strncpy(message, buffer+8, 140);
     message[140] = '\0';
 
-    insertMessageListEnd(m,message,-1);
+    insertMessageListEnd(m,message,lc);
+    lc++;
+    // send message to all servers
 
   }else if(strcmp(command,"GET_MESSAGES")==0){
     int n_messages;
@@ -50,23 +157,11 @@ void readRmb(int fdIdServer){
     udpWriteToWithSockAddr(fdIdServer,buffer_msg,strlen(buffer_msg),*addr_client);
 
     free(buffer_msg);
-    //udpWriteTo(fdIdServer,buffer,strlen(buffer),char * ip, int port);
+
   }
   free(addr_client);
 
 }
-
-
-
-// isto ainda é para mudar
-
-char name[100];
-char ip[100];
-char upt[100];
-char tpt[100];
-char ip_tejo[]  = "193.136.138.142";
-int dns_port = 59000;
-
 
 void keyboardRead(int fdIdServer){
   char buffer[BUFFERSIZE];
@@ -85,12 +180,12 @@ void keyboardRead(int fdIdServer){
     sscanf(buffer,"%s",command);
 
     if(strcmp("show_servers",command)==0){
-      printf("Show Servers\n");
+      getServers(fdIdServer);
     }else if(strcmp("show_messages",command)==0){
       printMessageList(m);
     }else if(strcmp("join",command)==0){
       sprintf(test_reg,"REG %s;%s;%s;%s",name,ip,upt,tpt);
-      udpWriteTo(fdIdServer,test_reg,strlen(test_reg),ip_tejo,dns_port);
+      udpWriteTo(fdIdServer,test_reg,strlen(test_reg),siip,sipt);
       // pode implementar-se um read para ver se foi registado com sucesso
       printf("Go Registar\n");
     }else if(strcmp("exit",command)==0){
@@ -103,10 +198,36 @@ void keyboardRead(int fdIdServer){
   }
 }
 
+int tcpRequest(int fdTCPread){
+		char buffer[BUFFERSIZE];
+		char command[50];
+		int n;
+		n = tcpRead(fdTCPread,buffer,BUFFERSIZE);
+		buffer[n] = '\0';
+		sscanf(buffer,"%s\n",command);
+		if(!strcmp(command,"SGET_MESSAGES")){
+			char * send  = getAllMessages(m);
+			tcpWrite(fdTCPread,send,strlen(send));
+		}
+		if(!strcmp(command,"SMESSAGES")){
+			saveMessages(m,buffer);
+		}
+}
+
 int main(int argc, char *argv[])
 {
 
   fd_set rfds;
+  int fdMax;
+	char buffer[BUFFERSIZE];
+	int i;
+	int fdSave;
+	fdList * msgservFd;
+	int fdTCPread;
+	int counter;
+
+
+
   m = createMessageList();
   time_t select_ini, select_end;
   // trocar a ordem disto, pode aparecer por outras ordens
@@ -136,28 +257,86 @@ int main(int argc, char *argv[])
     // falta adicionar os opcionais
   }
 
-  int fdIdServer = udpServer(5000);
+  int fdIdUDP = udpServer(atoi(upt));
+  int fdIdTCPAccept = tcpBindListen(atoi(tpt));
+
+  // connect to all and save fd
+
+
+  getServers(fdIdUDP);
+  msgservFd = createFdList();
+  printf("go connect\n");
+  for (i = 0; i < num_msgservs; i++){
+      if(msgservers[i].tpt == atoi(tpt))// comparar ip tb
+        continue;
+      fdSave = tcpConnect(msgservers[i].ip,msgservers[i].tpt);
+      if(fdSave!=-1){
+          insertFdListEnd(msgservFd,fdSave);
+          printf("%s %d\n",msgservers[i].ip, msgservers[i].tpt);
+      }
+
+  }
+  printf("end connect\n");
+  // send message to get all messages
+	struct timeval tr;
+	int lenFdList = FdListLen(msgservFd);
+
+	if(lenFdList > 0){
+		// pedir mensagens todas
+
+		sprintf(buffer,"SGET_MESSAGES\n");
+		while(1){
+			int p=0;
+			int fdGetMessages = getNFd(msgservFd,p);
+			tcpWrite(fdGetMessages,buffer,strlen(buffer));
+			FD_ZERO(&rfds);
+			FD_SET(fdGetMessages,&rfds);
+			tr.tv_usec = 0;
+			tr.tv_sec = 1;
+			counter=select(fdGetMessages+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tr);
+			if(counter == 0 ){// error try another
+				p++;
+			}else{
+					tcpRead(fdGetMessages,buffer,strlen(buffer));
+					//save msg
+			}
+
+
+		}
+	}
 
   select_ini = time(0);
-  struct timeval tr;
+
   tr.tv_usec = 0;
   select_end = select_ini;
   tr.tv_sec = REFRESH_RATE;
+
   while(1){
     FD_ZERO(&rfds);
-    FD_SET(fdIdServer,&rfds);
-    FD_SET(1,&rfds);
-    int maxfd=fdIdServer;
-    int counter;
 
-    
-    counter=select(fdIdServer+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tr);
+    FD_SET(1,&rfds);
+    fdMax = 0;
+    FD_SET(fdIdUDP,&rfds);
+    fdMax = max(fdMax, fdIdUDP);
+    FD_SET(fdIdTCPAccept,&rfds);
+		fdMax = max(fdIdTCPAccept, fdMax);
+		for(i = 0; i<FdListLen(msgservFd); i++ ){
+				fdTCPread = getNFd(msgservFd,i);
+				FD_SET(fdTCPread,&rfds);
+				fdMax = max(fdMax,fdTCPread);
+		}
+
+
+    counter=select(fdMax+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tr);
     select_end = time(0);
     if(select_end - select_ini >= REFRESH_RATE){
       select_ini = time(0);
       sprintf(test_reg,"REG %s;%s;%s;%s",name,ip,upt,tpt);
-      int n = udpWriteTo(fdIdServer,test_reg,strlen(test_reg),ip_tejo,dns_port);
-      printf("SEND REG %d\n",n);
+      int n = udpWriteTo(fdIdUDP,test_reg,strlen(test_reg),siip,sipt);
+      if(n<=0){
+        printf("error reg\n");
+        exit(-1);
+      }
       tr.tv_sec = REFRESH_RATE;
     }else{
       tr.tv_sec = REFRESH_RATE - (select_end - select_ini);
@@ -167,15 +346,31 @@ int main(int argc, char *argv[])
     }
 
     if(counter > 0 ){
-      if(FD_ISSET(fdIdServer,&rfds)){
-        readRmb(fdIdServer);
+      if(FD_ISSET(fdIdUDP,&rfds)){
+        readRmb(fdIdUDP);
       }
       if(FD_ISSET(1,&rfds)){
-        keyboardRead(fdIdServer);
+        keyboardRead(fdIdUDP);
       }
+      if(FD_ISSET(fdIdTCPAccept,&rfds)){
+        printf("go accept\n");
+        int fdSave = tcpAccept(fdIdTCPAccept);
+        insertFdListEnd(msgservFd,fdSave);
+        printf("accept sucess\n");
+      }
+
+			for(i = 0; i<FdListLen(msgservFd); i++ ){
+					fdTCPread = getNFd(msgservFd,i);
+					if(FD_ISSET(fdTCPread,&rfds)){
+						tcpRequest(fdTCPread);
+		      }
+			}
+
+			// if para as leituras
     }
 
 
   }
+  close(fdIdUDP);
 
 }

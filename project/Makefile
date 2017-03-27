@@ -3,12 +3,15 @@ CFLAGS  = -Wall
 TARGET1 = msgserv
 TARGET2 = rmb
 TARGET = $(TARGET1) $(TARGET2)
-DEPS = udp.o messagelist.o
+DEPS = udp.o messagelist.o tcp.o fdlist.o
 
 all: $(TARGET)
 
 messageList.o : messagelist.c messagelist.h
-		$(CC) $(CFLAGS) -c messagelist.c
+	$(CC) $(CFLAGS) -c messagelist.c
+
+fdlist.o : fdlist.c fdlist.h
+	$(CC) $(CFLAGS) -c fdlist.c	
 
 tcp.o: tcp.c tcp.h
 	$(CC) $(CFLAGS) -c tcp.c
