@@ -129,9 +129,5 @@ int tcpRead(int tcp_descriptor, char * buffer, int length){
     return(-2);
   }
     /** pode haver aquui um erro se m_s.value_length > sizeof(value) **/
-  if(recv(tcp_descriptor,buffer,length, 0)==-1){
-    return(-1);
-  }
-
-  return 0;
+  return recv(tcp_descriptor,buffer,length, 0);
 }

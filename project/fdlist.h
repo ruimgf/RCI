@@ -17,3 +17,5 @@ typedef struct fdList_{
 fdList  *  createFdList();
 void insertFdListEnd(fdList * m,int fd);
 void freeFdList(fdList * m);
+int FdListLen(fdList * m);
+int getNFd(fdList * m, int n);

@@ -28,7 +28,7 @@ char name[100];
 char ip[100];
 char upt[100];
 char tpt[100];
-char siip[]  = "193.136.128.109";
+char siip[]  = "127.0.0.1";
 int sipt = 59000;
 
 void getServers(int myFd)
@@ -157,7 +157,7 @@ void readRmb(int fdIdServer){
     udpWriteToWithSockAddr(fdIdServer,buffer_msg,strlen(buffer_msg),*addr_client);
 
     free(buffer_msg);
-    //udpWriteTo(fdIdServer,buffer,strlen(buffer),char * ip, int port);
+
   }
   free(addr_client);
 
@@ -198,11 +198,36 @@ void keyboardRead(int fdIdServer){
   }
 }
 
+int tcpRequest(int fdTCPread){
+		char buffer[BUFFERSIZE];
+		char command[50];
+		int n;
+		n = tcpRead(fdTCPread,buffer,BUFFERSIZE);
+		buffer[n] = '\0';
+		sscanf(buffer,"%s\n",command);
+		if(!strcmp(command,"SGET_MESSAGES")){
+			char * send  = getAllMessages(m);
+			tcpWrite(fdTCPread,send,strlen(send));
+		}
+		if(!strcmp(command,"SMESSAGES")){
+			saveMessages(m,buffer);
+		}
+}
+
 int main(int argc, char *argv[])
 {
 
   fd_set rfds;
   int fdMax;
+	char buffer[BUFFERSIZE];
+	int i;
+	int fdSave;
+	fdList * msgservFd;
+	int fdTCPread;
+	int counter;
+
+
+
   m = createMessageList();
   time_t select_ini, select_end;
   // trocar a ordem disto, pode aparecer por outras ordens
@@ -233,17 +258,16 @@ int main(int argc, char *argv[])
   }
 
   int fdIdUDP = udpServer(atoi(upt));
-  int fdIdTCP = tcpBindListen(atoi(tpt));
+  int fdIdTCPAccept = tcpBindListen(atoi(tpt));
 
   // connect to all and save fd
-  int i;
-  int fdSave;
-  fdList * msgservFd;
+
+
   getServers(fdIdUDP);
   msgservFd = createFdList();
   printf("go connect\n");
   for (i = 0; i < num_msgservs; i++){
-      if(msgservers[i].tpt == atoi(tpt))
+      if(msgservers[i].tpt == atoi(tpt))// comparar ip tb
         continue;
       fdSave = tcpConnect(msgservers[i].ip,msgservers[i].tpt);
       if(fdSave!=-1){
@@ -254,23 +278,54 @@ int main(int argc, char *argv[])
   }
   printf("end connect\n");
   // send message to get all messages
+	struct timeval tr;
+	int lenFdList = FdListLen(msgservFd);
+
+	if(lenFdList > 0){
+		// pedir mensagens todas
+
+		sprintf(buffer,"SGET_MESSAGES\n");
+		while(1){
+			int p=0;
+			int fdGetMessages = getNFd(msgservFd,p);
+			tcpWrite(fdGetMessages,buffer,strlen(buffer));
+			FD_ZERO(&rfds);
+			FD_SET(fdGetMessages,&rfds);
+			tr.tv_usec = 0;
+			tr.tv_sec = 1;
+			counter=select(fdGetMessages+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tr);
+			if(counter == 0 ){// error try another
+				p++;
+			}else{
+					tcpRead(fdGetMessages,buffer,strlen(buffer));
+					//save msg
+			}
+
+
+		}
+	}
 
   select_ini = time(0);
-  struct timeval tr;
+
   tr.tv_usec = 0;
   select_end = select_ini;
   tr.tv_sec = REFRESH_RATE;
 
   while(1){
-    int counter;
     FD_ZERO(&rfds);
 
     FD_SET(1,&rfds);
     fdMax = 0;
     FD_SET(fdIdUDP,&rfds);
     fdMax = max(fdMax, fdIdUDP);
-    FD_SET(fdIdTCP,&rfds);
-    fdMax = max(fdMax,fdIdTCP);
+    FD_SET(fdIdTCPAccept,&rfds);
+		fdMax = max(fdIdTCPAccept, fdMax);
+		for(i = 0; i<FdListLen(msgservFd); i++ ){
+				fdTCPread = getNFd(msgservFd,i);
+				FD_SET(fdTCPread,&rfds);
+				fdMax = max(fdMax,fdTCPread);
+		}
+
 
     counter=select(fdMax+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tr);
     select_end = time(0);
@@ -297,12 +352,21 @@ int main(int argc, char *argv[])
       if(FD_ISSET(1,&rfds)){
         keyboardRead(fdIdUDP);
       }
-      if(FD_ISSET(fdIdTCP,&rfds)){
+      if(FD_ISSET(fdIdTCPAccept,&rfds)){
         printf("go accept\n");
-        int fdSave = tcpAccept(fdIdTCP);
+        int fdSave = tcpAccept(fdIdTCPAccept);
         insertFdListEnd(msgservFd,fdSave);
         printf("accept sucess\n");
       }
+
+			for(i = 0; i<FdListLen(msgservFd); i++ ){
+					fdTCPread = getNFd(msgservFd,i);
+					if(FD_ISSET(fdTCPread,&rfds)){
+						tcpRequest(fdTCPread);
+		      }
+			}
+
+			// if para as leituras
     }
 
 

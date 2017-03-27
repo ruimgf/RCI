@@ -43,3 +43,28 @@ void freeFdList(fdList * m){
     }
     free(m);
 }
+
+int FdListLen(fdList * m){
+
+    fdNode * aux = m->begin;
+    int i=0;
+    while (aux != NULL) {
+      i++;
+      aux = aux->next;
+    }
+    return i;
+}
+
+int getNFd(fdList * m, int n){
+    fdNode * aux = m->begin;
+
+    if ( n >= FdListLen(m))
+        return -1;
+
+    int i;
+
+    for(i=0; i<n ;i++)
+        aux = aux->next;
+
+    return aux->fd;
+}
