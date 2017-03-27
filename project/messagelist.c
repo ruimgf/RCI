@@ -103,20 +103,31 @@ void saveMessages(messageList * m, char * messages){
    char * curLine = messages;
    int parse_lc;
    char parse_message[160];
+   char strlc[10];
    char * nextLine;
-   printf("1\n");
+   char * begin_string;
+   
    curLine = strchr(curLine, '\n');
-   printf("%s\n",curLine);
+
+
    curLine++; // skipe SMESSAGES
    while(curLine)
    {
-      printf("2\n");
+
       nextLine = strchr(curLine, '\n');
-      printf("3\n");
+
       if (nextLine){
         *nextLine = '\0';  // temporarily terminate the current line
-        sscanf(curLine,"%d;%s",&parse_lc,parse_message);
-        printf("3\n");
+        //sscanf(curLine,"%d;%s",&parse_lc,parse_message);
+        begin_string = strchr(curLine, ';');
+
+        strncpy(strlc,curLine,(begin_string - curLine));
+        parse_lc = atoi(strlc);
+        parse_message[begin_string - curLine]='\0';
+        begin_string ++;
+        strncpy(parse_message,begin_string,(nextLine - begin_string));
+        parse_message[nextLine - begin_string]='\0';
+
         insertMessageListEnd(m,parse_message,parse_lc);
       }
 

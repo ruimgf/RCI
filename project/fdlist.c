@@ -18,8 +18,7 @@ void insertFdListEnd(fdList * m ,int fd){
 
 
     insertItem->fd = fd;
-
-
+    insertItem->next = NULL;
 
     if(m->begin == NULL){ // Empty List
       m->begin = insertItem;
