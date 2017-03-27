@@ -109,8 +109,6 @@ int tcpWrite(int tcp_descriptor,char * mensage, int length){
     if(send(tcp_descriptor,mensage,length, 0)==-1){
       return(-1);
     }
-    recv(tcp_descriptor,buffer,100, 0);
-    printf("%s\n",buffer);
     return 0;
 
 }

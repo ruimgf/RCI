@@ -93,6 +93,7 @@ char * getAllMessages(messageList * m){
   }
   sprintf(str,"\n");
   strcat(ret,str);
+  printf("%s\n",ret);
   return ret;
 
 }
@@ -103,14 +104,19 @@ void saveMessages(messageList * m, char * messages){
    int parse_lc;
    char parse_message[160];
    char * nextLine;
+   printf("1\n");
    curLine = strchr(curLine, '\n');
+   printf("%s\n",curLine);
    curLine++; // skipe SMESSAGES
    while(curLine)
    {
+      printf("2\n");
       nextLine = strchr(curLine, '\n');
+      printf("3\n");
       if (nextLine){
         *nextLine = '\0';  // temporarily terminate the current line
         sscanf(curLine,"%d;%s",&parse_lc,parse_message);
+        printf("3\n");
         insertMessageListEnd(m,parse_message,parse_lc);
       }
 

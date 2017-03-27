@@ -207,6 +207,7 @@ int tcpRequest(int fdTCPread){
 		sscanf(buffer,"%s\n",command);
 		if(!strcmp(command,"SGET_MESSAGES")){
 			char * send  = getAllMessages(m);
+			printf("%d\n",fdTCPread);
 			tcpWrite(fdTCPread,send,strlen(send));
 		}
 		if(!strcmp(command,"SMESSAGES")){
@@ -224,7 +225,7 @@ int main(int argc, char *argv[])
 	int fdSave;
 	fdList * msgservFd;
 	int fdTCPread;
-	int counter;
+	int counter=1	;
 
 
 
@@ -262,7 +263,7 @@ int main(int argc, char *argv[])
 
   // connect to all and save fd
 
-
+	printf("%s\n","ola");
   getServers(fdIdUDP);
   msgservFd = createFdList();
   printf("go connect\n");
@@ -285,20 +286,27 @@ int main(int argc, char *argv[])
 		// pedir mensagens todas
 
 		sprintf(buffer,"SGET_MESSAGES\n");
+		int p=0;
 		while(1){
-			int p=0;
 			int fdGetMessages = getNFd(msgservFd,p);
+			printf("go send\n");
 			tcpWrite(fdGetMessages,buffer,strlen(buffer));
 			FD_ZERO(&rfds);
 			FD_SET(fdGetMessages,&rfds);
 			tr.tv_usec = 0;
 			tr.tv_sec = 1;
-			counter=select(fdGetMessages+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tr);
+			//counter=select(fdGetMessages+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tr);
+			printf("end select\n");
 			if(counter == 0 ){// error try another
 				p++;
 			}else{
-					tcpRead(fdGetMessages,buffer,strlen(buffer));
+					int n = tcpRead(fdGetMessages,buffer,BUFFERSIZE);
+					buffer[n] = '\0';
+					printf("%s\n",buffer);
+					saveMessages(m,buffer);
+					printf("save\n",buffer);
 					//save msg
+					break;
 			}
 
 
