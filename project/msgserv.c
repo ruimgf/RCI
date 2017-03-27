@@ -19,6 +19,7 @@ typedef struct msgserv_{
 }msgserv;
 
 msgserv msgservers[100];
+fdList * msgservFd;
 int num_msgservs = 0;
 // Global Variables
 messageList * m;
@@ -143,6 +144,12 @@ void readRmb(int fdIdServer){
     message[140] = '\0';
 
     insertMessageListEnd(m,message,lc);
+		sprintf(buffer,"SMESSAGES\n%d;%s\n\n",lc,message);
+		int i;
+		for(i = 0; i<FdListLen(msgservFd); i++ ){
+				int fdTCPread = getNFd(msgservFd,i);
+				tcpWrite(fdTCPread,buffer,strlen(buffer));
+		}
     lc++;
     // send message to all servers
 
@@ -223,7 +230,6 @@ int main(int argc, char *argv[])
 	char buffer[BUFFERSIZE];
 	int i;
 	int fdSave;
-	fdList * msgservFd;
 	int fdTCPread;
 	int counter=1	;
 
@@ -281,7 +287,7 @@ int main(int argc, char *argv[])
   // send message to get all messages
 	struct timeval tr;
 	int lenFdList = FdListLen(msgservFd);
-
+	printf("end len\n");
 	if(lenFdList > 0){
 		// pedir mensagens todas
 
