@@ -4,7 +4,7 @@
 #include <netdb.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <arpa/inet.h>	
+#include <arpa/inet.h>
 #include <time.h>
 #include "udp.h"
 
@@ -55,7 +55,7 @@ void getServers()
 {
 	int len=0;
 	char port_udp[10],port_tcp[10];
-	char * str, * str2;	
+	char * str, * str2;
 	int nread;
 
 	if ((len=udpWriteTo(myFd, "GET_SERVERS", 11, siip, sipt)) >= 0)
@@ -99,29 +99,29 @@ void getServers()
 				len = strlen(str)-strlen(str2);
 				strncpy(port_udp,str,len);
 				port_udp[len]='\0';
-				
+
 
 				// TCP
 				str=++str2;
 				str2=strchr(str,LINE_SEP);
 				if(!str2) // Mensagem mal definida
 					break;
-								
+
 				len = strlen(str)-strlen(str2);
 				strncpy(port_tcp,str,len);
 				port_tcp[len]='\0';
-				
+
 				msgservers[num_msgservs].upt = atoi(port_udp);
 				msgservers[num_msgservs].tpt = atoi(port_tcp);
 
 				// Copia mensagem só no fim de todos os campos lidos
 				// To DO ...
-							
+
 				printf("Servidor %d - IP: %s,\t UDP: %d,\t TCP: %d\n",num_msgservs,msgservers[num_msgservs].ip,msgservers[num_msgservs].upt,msgservers[num_msgservs].tpt);
 				num_msgservs++;
 			}
 		}
-	}	
+	}
 }
 
 ////////////////////////////// keyboardRead  //////////////////////////
@@ -144,13 +144,13 @@ void keyboardRead(int r)
 			help();
 			return;
 		}
-		
+
 		sscanf(buffer,"%s",command);
 
 		if(strcmp("show_servers",command)==0)
 		{
 			printf("Show Servers\n");
-			getServers(msgservers);
+			getServers();
 		}
 		else if(strcmp("publish",command)==0)
 		{
@@ -164,8 +164,8 @@ void keyboardRead(int r)
 			printf("Show mensagens\n");
 			sscanf(buffer,"%s s%d",command,&n);
 			sprintf(buffer,"GET_MESSAGES %d",n);
-			len=strlen(buffer);	
-			
+			len=strlen(buffer);
+
 			if (udpWriteTo(myFd, buffer, len, msgservers[r].ip , msgservers[r].upt) < 0)
 			{
 				printf("udp didint write");
@@ -180,7 +180,7 @@ void keyboardRead(int r)
 			select_ini = time(0);
 			select_end = select_ini;
 			tr.tv_sec = REFRESH_RATE;
-			
+
 			FD_ZERO(&rfds);
 			FD_SET(myFd,&rfds);
 			FD_SET(1,&rfds);
@@ -188,14 +188,14 @@ void keyboardRead(int r)
 
 			counter=select(myFd+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tr);
 			select_end = time(0);
-		
+
 			if(select_end - select_ini >= REFRESH_RATE)
-			{	
+			{
 				printf("udp didint send");
 				return;
 			}
 			else
-			{				
+			{
 				if(counter < 0)
 					return;
 				else if(counter > 0 )
@@ -211,9 +211,9 @@ void keyboardRead(int r)
 					{
 						fgets(buffer, BUFFERSIZE , stdin);
 					}
-				}				
+				}
 			}
-		}		
+		}
 		else if(strcmp("exit",command)==0)
 		{
 			exit(0);
@@ -245,7 +245,7 @@ void siPortIp()
 
 int main(int argc, char ** argv)
 {
-	srand(time(NULL)); 
+	srand(time(NULL));
 
 	if (argc>1)
 	{
@@ -280,7 +280,7 @@ int main(int argc, char ** argv)
 	// mandar mensagem para ir buscar os servidores
 	getServers();
 	int r = rand()%num_msgservs;      // returns a pseudo-random integer between 0 and RAND_MAX
-	
+
 	while(1)
 	{
 		printf("Enter a command:  ");

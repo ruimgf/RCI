@@ -205,7 +205,7 @@ void keyboardRead(int fdIdServer){
   }
 }
 
-int tcpRequest(int fdTCPread){
+void tcpRequest(int fdTCPread){
 		char buffer[BUFFERSIZE];
 		char command[50];
 		int n;
@@ -310,7 +310,7 @@ int main(int argc, char *argv[])
 					buffer[n] = '\0';
 					printf("%s\n",buffer);
 					saveMessages(m,buffer);
-					printf("save\n",buffer);
+					printf("save\n");
 					//save msg
 					break;
 			}
@@ -386,5 +386,5 @@ int main(int argc, char *argv[])
 
   }
   close(fdIdUDP);
-
+	return 0;
 }

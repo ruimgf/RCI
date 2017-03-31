@@ -32,7 +32,8 @@ int tcpBindListen(int server_port){
 }
 
 int tcpAccept(int myFd){
-    int newFd,addrlen;
+    int newFd;
+    socklen_t addrlen;
     struct sockaddr_in addr;
     addrlen=sizeof(addr);
     if((newFd=accept(myFd,(struct sockaddr*)&addr,&addrlen))==-1)
@@ -100,7 +101,7 @@ void tcpClose(int tcp_descriptor){
  * @return               [-1 em caso de erro 0 no caso de sucesso]
  */
 int tcpWrite(int tcp_descriptor,char * mensage, int length){
-    char buffer[100];
+    
     //verificar argumentos
     if (tcp_descriptor == -1 || mensage == NULL || length <= 0){
       return(-2);
