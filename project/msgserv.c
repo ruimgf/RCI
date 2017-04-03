@@ -12,6 +12,17 @@
 #define BUFFERSIZE 2000
 #define REFRESH_RATE 5
 
+typedef struct appSpec_{
+	char name[20];    //endereço IP
+	char ip[16];      //endereço IP
+  int upt;          //port udp
+	int tpt;          //port tcp
+  char siip[16];    //IP do servidor de identidades
+  int sipt;         //porto do servidor de identidades
+  int m;            //nmr max de msg guardadas
+  int r;            //time out
+}appSpec;
+
 typedef struct msgserv_{
 	char ip[16];    //endereço IP
 	int upt;        //port udp
@@ -25,12 +36,14 @@ int num_msgservs = 0;
 messageList * m;
 char test_reg[100];
 int lc = 0;
-char name[100];
-char ip[100];
-char upt[100];
-char tpt[100];
-char siip[]  = "127.0.0.1";
-int sipt = 59000;
+appSpec appspec;
+int reg = 0;
+
+
+void wrongUse(){
+  printf("Wrong Program Usage : msgserv –n name –j ip -u upt –t tpt [-i siip] [-p sipt] [–m m] [–r r] \n");
+  exit(-1);
+}
 
 void getServers(int myFd)
 {
@@ -40,21 +53,17 @@ void getServers(int myFd)
 	int nread;
   num_msgservs = 0;
   char buffer[BUFFERSIZE];
-	if ((len=udpWriteTo(myFd, "GET_SERVERS", 11, siip, sipt)) >= 0)
+	if ((len=udpWriteTo(myFd, "GET_SERVERS", 11, appspec.siip, appspec.sipt)) >= 0)
 	{
-		printf ("UDP WRITE BYTES: %d\n", len);
 		nread=udpRead(myFd, buffer, BUFFERSIZE);
 
 		if (nread >= 0)
 		{
-			//printf("go clean");
-			//write(1,buffer,nread);
+
 			buffer[nread] = '\0';
-			//printf("NREAD: %d, BUFFER: %s", nread, buffer);
 
 			//descarta o SERVERS
 			str=strchr(buffer,LINE_SEP);
-
 
 			while((str=strchr(str,LINE_SEP)))
 			{
@@ -98,27 +107,92 @@ void getServers(int myFd)
 
 				// Copia mensagem só no fim de todos os campos lidos
 				// To DO ...
-
-				printf("Servidor %d - IP: %s,\t UDP: %d,\t TCP: %d\n",num_msgservs,msgservers[num_msgservs].ip,msgservers[num_msgservs].upt,msgservers[num_msgservs].tpt);
 				num_msgservs++;
 			}
 		}
 	}
+	int i;
+	if(num_msgservs==0){
+		printf("NENHUM SERVIDOR ATIVO\n");
+		return;
+	}
+	for (i = 0; i <num_msgservs; i++) {
+		printf("Servidor %d - IP: %s,\t UDP: %d,\t TCP: %d\n",i,msgservers[i].ip,msgservers[i].upt,msgservers[i].tpt);
+	}
 }
 
 
+
+void readArgs(char ** argv,int argc){
+	char aux[10];
+   printf("argc %d\n", argc);
+
+  appspec.name[0]='\0';
+  appspec.ip[0]='\0';
+  appspec.upt=-1;
+  appspec.tpt=-1;
+  appspec.siip[0]='\0';
+  appspec.sipt=-1;
+  appspec.m=-1;
+  appspec.r=-1;
+
+  if(argc < 9 || argc > 17)
+  {
+		wrongUse();
+		exit(-1);
+  }
+  else
+  {
+    for(int i=0; i<(argc-1)/2 ; i++)
+    {
+      if(strcmp(argv[1+2*i],"-n")==0)     //impares -n
+      {
+        strcpy(appspec.name, argv[2*i+2]);
+      }
+      if(strcmp(argv[1+2*i],"-j")==0)
+      {
+        strcpy(appspec.ip, argv[2*i+2]);
+      }
+      if(strcmp(argv[1+2*i],"-u")==0)
+      {
+        strcpy(aux, argv[2*i+2]);
+        appspec.upt=atoi(aux);
+      }
+      if(strcmp(argv[1+2*i],"-t")==0)
+      {
+        strcpy(aux, argv[2*i+2]);
+        appspec.tpt=atoi(aux);
+      }
+      if(strcmp(argv[1+2*i],"-i")==0)
+      {
+        strcpy(appspec.siip, argv[2*i+2]);
+      }
+      if(strcmp(argv[1+2*i],"-p")==0)
+      {
+        strcpy(aux, argv[2*i+2]);
+        appspec.sipt=atoi(aux);
+      }
+      if(strcmp(argv[1+2*i],"-m")==0)
+      {
+        strcpy(aux, argv[2*i+2]);
+        appspec.m=atoi(aux);
+      }
+      if(strcmp(argv[1+2*i],"-r")==0)
+      {
+        strcpy(aux, argv[2*i+2]);
+        appspec.r=atoi(aux);
+      }
+    }
+  }
+    if(strlen(appspec.name)==0 || strlen(appspec.ip)==0 || appspec.upt==-1 || appspec.tpt==-1)
+      wrongUse();
+}
 
 int max(int x, int y){
     if(x>y)
       return x;
     return y;
 }
-
-void wrongUse(){
-  printf("Wrong Program Usage : msgserv –n name –j ip -u upt –t tpt [-i siip] [-p sipt] [–m m] [–r r] \n");
-  exit(-1);
-}
-
 
 void readRmb(int fdIdServer){
   char buffer[BUFFERSIZE];
@@ -191,8 +265,9 @@ void keyboardRead(int fdIdServer){
     }else if(strcmp("show_messages",command)==0){
       printMessageList(m);
     }else if(strcmp("join",command)==0){
-      sprintf(test_reg,"REG %s;%s;%s;%s",name,ip,upt,tpt);
-      udpWriteTo(fdIdServer,test_reg,strlen(test_reg),siip,sipt);
+			reg = 1	;
+			sprintf(test_reg,"REG %s;%s;%d;%d",appspec.name,appspec.ip,appspec.upt,appspec.tpt);
+      udpWriteTo(fdIdServer,test_reg,strlen(test_reg),appspec.siip,appspec.sipt);
       // pode implementar-se um read para ver se foi registado com sucesso
       printf("Go Registar\n");
     }else if(strcmp("exit",command)==0){
@@ -222,6 +297,10 @@ void tcpRequest(int fdTCPread){
 		}
 }
 
+void handler(int a){
+		printf("um servidor foi a baixo\n");
+}
+
 int main(int argc, char *argv[])
 {
 
@@ -232,49 +311,25 @@ int main(int argc, char *argv[])
 	int fdSave;
 	int fdTCPread;
 	int counter=1	;
-
+	void (*old_handler)(int);
+	if((old_handler=signal(SIGPIPE,handler))==SIG_ERR)
+		exit(1);
 
 
   m = createMessageList();
   time_t select_ini, select_end;
-  // trocar a ordem disto, pode aparecer por outras ordens
-  if(argc < 9){
-    wrongUse();
-  }else{
-    if(strcmp(argv[1],"-n")==0){
-      strcpy(name,argv[2]);
-    }else{
-      wrongUse();
-    }
-    if(strcmp(argv[3],"-j")==0){
-      strcpy(ip,argv[4]);
-    }else{
-      wrongUse();
-    }
-    if(strcmp(argv[5],"-u")==0){
-      strcpy(upt,argv[6]);
-    }else{
-      wrongUse();
-    }
-    if(strcmp(argv[7],"-t")==0){
-      strcpy(tpt,argv[8]);
-    }else{
-      wrongUse();
-    }
-    // falta adicionar os opcionais
-  }
+	readArgs(argv,argc);
 
-  int fdIdUDP = udpServer(atoi(upt));
-  int fdIdTCPAccept = tcpBindListen(atoi(tpt));
+  int fdIdUDP = udpServer(appspec.upt);
+
+	int fdIdTCPAccept = tcpBindListen(appspec.tpt);
 
   // connect to all and save fd
-
-	printf("%s\n","ola");
   getServers(fdIdUDP);
   msgservFd = createFdList();
   printf("go connect\n");
   for (i = 0; i < num_msgservs; i++){
-      if(msgservers[i].tpt == atoi(tpt))// comparar ip tb
+      if(msgservers[i].tpt == appspec.tpt)// comparar ip tb
         continue;
       fdSave = tcpConnect(msgservers[i].ip,msgservers[i].tpt);
       if(fdSave!=-1){
@@ -308,7 +363,7 @@ int main(int argc, char *argv[])
 			}else{
 					int n = tcpRead(fdGetMessages,buffer,BUFFERSIZE);
 					buffer[n] = '\0';
-					printf("%s\n",buffer);
+					//printf("%s\n",buffer);
 					saveMessages(m,buffer);
 					printf("save\n");
 					//save msg
@@ -338,6 +393,7 @@ int main(int argc, char *argv[])
 				fdTCPread = getNFd(msgservFd,i);
 				FD_SET(fdTCPread,&rfds);
 				fdMax = max(fdMax,fdTCPread);
+
 		}
 
 
@@ -345,12 +401,14 @@ int main(int argc, char *argv[])
     select_end = time(0);
     if(select_end - select_ini >= REFRESH_RATE){
       select_ini = time(0);
-      sprintf(test_reg,"REG %s;%s;%s;%s",name,ip,upt,tpt);
-      int n = udpWriteTo(fdIdUDP,test_reg,strlen(test_reg),siip,sipt);
-      if(n<=0){
-        printf("error reg\n");
-        exit(-1);
-      }
+      sprintf(test_reg,"REG %s;%s;%d;%d",appspec.name,appspec.ip,appspec.upt,appspec.tpt);
+			if(reg==1){
+      	int n = udpWriteTo(fdIdUDP,test_reg,strlen(test_reg),appspec.siip,appspec.sipt);
+      	if(n<=0){
+        	printf("error reg\n");
+        	exit(-1);
+      	}
+			}
       tr.tv_sec = REFRESH_RATE;
     }else{
       tr.tv_sec = REFRESH_RATE - (select_end - select_ini);
