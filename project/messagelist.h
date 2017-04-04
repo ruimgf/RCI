@@ -25,4 +25,4 @@ char * getLastNmessages(messageList * m, int n);
 char * getAllMessages(messageList * m);
 void printMessageList(messageList * m);
 void freeMessageList(messageList * m);
-void saveMessages(messageList * m, char * messages);
+int saveMessages(messageList * m, char * messages);

@@ -300,10 +300,18 @@ int main(int argc, char *argv[])
 			counter=select(fdGetMessages+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tr);
 
 			if(counter > 0 ){// error try another
-          sleep(1);
-					int n = tcpRead(fdGetMessages,buffer,BUFFERSIZE);
-					buffer[n] = '\0';
-          saveMessages(m,buffer);
+
+          int n;
+          int nread=0;
+          while(1){
+            n = tcpRead(fdGetMessages,buffer+nread,BUFFERSIZE-nread); // quando há muitas mensagens só numa leitura não funciona
+            nread += n;
+            buffer[nread] = '\0';
+            if(saveMessages(m,buffer)==0){ // concluido com sucesso
+              break;
+            }
+
+          }
 					break;
 			}
 

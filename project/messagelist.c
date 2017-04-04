@@ -133,7 +133,7 @@ char * getAllMessages(messageList * m){
 
 }
 
-void saveMessages(messageList * m, char * messages){
+int saveMessages(messageList * m, char * messages){
 
    char * curLine = messages;
    int parse_lc;
@@ -145,11 +145,10 @@ void saveMessages(messageList * m, char * messages){
    curLine = strchr(curLine, '\n');
    int l = strlen(messages);
    if(messages[l]!='\n'&&messages[l-1]!='\n'){
-     printf("mensagem mal recebida\n");
-     return;
+     return -1;
    }
    if(strlen(messages)<12)
-      return;
+      return -1;
 
    curLine++; // skipe SMESSAGES
    while(curLine)
@@ -173,7 +172,7 @@ void saveMessages(messageList * m, char * messages){
       }
 
       if(*(nextLine+1)=='\n'){
-        return;// end
+        return 0;// end
       }
       curLine=nextLine+1;
    }
