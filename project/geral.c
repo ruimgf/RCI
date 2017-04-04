@@ -28,7 +28,7 @@ void getServers(int myFd ,msgserv msgservers[100],int  * num_msg, char * siip, i
   if(select(myFd+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tr))
 	{
 		nread=udpRead(myFd, buffer, BUFFERSIZE);
-    
+
 		if (nread >= 0)
 		{
 			buffer[nread] = '\0';
@@ -95,12 +95,15 @@ void getServers(int myFd ,msgserv msgservers[100],int  * num_msg, char * siip, i
 
 void printServers(msgserv msgservers[100], int num_msgservs){
   int i;
+  if(num_msgservs==0)
+      printf("no servers available\n");
   for( i=0;i<num_msgservs;i++)
   {
     printf("Servidor %d - NAME: %s\t IP: %s\t UDP: %d\t TCP: %d\n",
           i, msgservers[i].name,msgservers[i].ip,msgservers[i].upt,
           msgservers[i].tpt);
   }
+
 }
 
 ////////////////////////////// siPortIp  //////////////////////////

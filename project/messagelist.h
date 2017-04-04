@@ -15,9 +15,11 @@ typedef struct messageList_{
     int actualLc;
     struct messageNode_ * begin;
     struct messageNode_ * end;
+    int nmessages;
+    int maxmessages;
 }messageList;
 
-messageList  *  createMessageList();
+messageList  *  createMessageList(int max);
 void insertMessageListEnd(messageList * m, char * message, int lc);
 char * getLastNmessages(messageList * m, int n);
 char * getAllMessages(messageList * m);

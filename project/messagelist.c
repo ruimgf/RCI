@@ -6,11 +6,13 @@ int max_1(int x, int y){
     return y;
 }
 
-messageList  * createMessageList(){
+messageList  * createMessageList(int max){
     messageList  * m1 = malloc(sizeof(messageList));
     m1->actualLc = 0;
     m1->begin = NULL;
     m1->end = NULL;
+    m1->nmessages=0;
+    m1->maxmessages = max;
     return m1;
 }
 
@@ -19,13 +21,20 @@ void insertMessageListEnd(messageList * m , char * message, int lc){
     messageNode * insertItem;
     aux = m->end;
     int int_lc;
+    m->nmessages++;
+    if(m->nmessages>m->maxmessages){
+      m->nmessages = m->maxmessages;
+      aux = m->begin;
+      m->begin = m->begin->next;
+      free(aux);
+    }
 
     if(lc == -1){
-      m->actualLc++;
       int_lc = m->actualLc;
+      m->actualLc++;
     }else{
       m->actualLc = max_1(m->actualLc,lc) + 1;
-      int_lc = m->actualLc;
+      int_lc = lc;
     }
 
     insertItem = (messageNode *)malloc(sizeof(messageNode));
@@ -41,9 +50,21 @@ void insertMessageListEnd(messageList * m , char * message, int lc){
       insertItem->prev = NULL;
       m->end = insertItem;
     }else{
-      aux->next = insertItem;
-      insertItem->prev = aux;
-      m->end = insertItem;
+      if(m->end->lc <= int_lc){
+        m->end->next = insertItem;
+        insertItem->prev = m->end;
+        m->end = insertItem;
+        return;
+      }
+      aux=m->begin;
+      while(aux!=NULL){
+        if(aux->lc > int_lc){
+            insertItem->next = aux;
+            aux->prev = insertItem;
+            return;
+        }
+        aux = aux->next;
+      }
     }
 }
 

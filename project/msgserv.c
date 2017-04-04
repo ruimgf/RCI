@@ -49,8 +49,7 @@ void readArgs(char ** argv,int argc){
 	siPortIp(appspec.siip,&appspec.sipt);
   appspec.m=200;
   appspec.r=10;
-	printf("%s\n",appspec.siip);
-	printf("%d\n",appspec.sipt);
+
   if(argc < 9 || argc > 17)
   {
 		wrongUse();
@@ -140,7 +139,7 @@ void readRmb(int fdIdServer){
 				int fdTCPread = getNFd(msgservFd,i);
 				if(tcpWrite(fdTCPread,buffer,strlen(buffer))==-1){
 					removeFdListEnd(msgservFd,fdTCPread);
-					printf("error\n");
+					printf("Error one server go down\n");
 				}
 		}
 
@@ -220,7 +219,7 @@ void tcpRequest(int fdTCPread){
 				saveMessages(m,buffer);
 			}
 		}else{
-			printf("error socket was closed\n");
+			printf("One server go down\n");
 			close(fdTCPread);
 			removeFdListEnd(msgservFd,fdTCPread);
 		}
@@ -246,10 +245,10 @@ int main(int argc, char *argv[])
 		exit(1);
 
 
-  m = createMessageList();
+
   time_t select_ini, select_end;
 	readArgs(argv,argc);
-
+  m = createMessageList(appspec.m);
   fdIdUDP = udpServer(appspec.upt);
 
 	fdIdTCPAccept = tcpBindListen(appspec.tpt);
@@ -261,7 +260,9 @@ int main(int argc, char *argv[])
 	msgservFd = createFdList();
 
   for (i = 0; i < num_msgservs; i++){
-			printf("go connect\n");
+      if(strcmp(appspec.name,msgservers[i].name)==0){
+        continue;
+      }
       fdSave = tcpConnect(msgservers[i].ip,msgservers[i].tpt);
       if(fdSave!=-1){
 					printf("connect\n");
@@ -299,7 +300,6 @@ int main(int argc, char *argv[])
 					saveMessages(m,buffer);
 					break;
 			}
-			printf("for\n");
 
 		}
 	}
@@ -319,7 +319,7 @@ int main(int argc, char *argv[])
     fdMax = max(fdMax, fdIdUDP);
     FD_SET(fdIdTCPAccept,&rfds);
 		fdMax = max(fdIdTCPAccept, fdMax);
-		//printf("%d\n",FdListLen(msgservFd));
+
 		for(i = 0; i<FdListLen(msgservFd); i++ ){
 				fdTCPread = getNFd(msgservFd,i);
 				FD_SET(fdTCPread,&rfds);
@@ -357,10 +357,10 @@ int main(int argc, char *argv[])
         keyboardRead(fdIdUDP);
       }
       if(FD_ISSET(fdIdTCPAccept,&rfds)){
-        printf("go accept\n");
+
         int fdSave = tcpAccept(fdIdTCPAccept);
         insertFdListEnd(msgservFd,fdSave);
-        printf("accept sucess\n");
+
       }
 
 			for(i = 0; i<FdListLen(msgservFd); i++ ){
