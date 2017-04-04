@@ -7,10 +7,8 @@
 #include "fdlist.h"
 #include <time.h>
 #include <signal.h>
+#include "geral.h"
 
-#define FIELD_SEP ';'
-#define LINE_SEP '\n'
-#define BUFFERSIZE 2000
 #define REFRESH_RATE 5
 
 typedef struct appSpec_{
@@ -23,12 +21,6 @@ typedef struct appSpec_{
   int m;            //nmr max de msg guardadas
   int r;            //time out
 }appSpec;
-
-typedef struct msgserv_{
-	char ip[16];    //endereço IP
-	int upt;        //port udp
-	int tpt;        //port tcp
-}msgserv;
 
 msgserv msgservers[100];
 fdList * msgservFd;
@@ -45,81 +37,8 @@ void wrongUse(){
   exit(-1);
 }
 
-void getServers(int myFd)
-{
-	int len=0;
-	char port_udp[10],port_tcp[10];
-	char * str, * str2;
-	int nread;
-  num_msgservs = 0;
-  char buffer[BUFFERSIZE];
-	if ((len=udpWriteTo(myFd, "GET_SERVERS", 11, appspec.siip, appspec.sipt)) >= 0)
-	{
-		nread=udpRead(myFd, buffer, BUFFERSIZE);
-
-		if (nread >= 0)
-		{
-
-			buffer[nread] = '\0';
-
-			//descarta o SERVERS
-			str=strchr(buffer,LINE_SEP);
-
-			while((str=strchr(str,LINE_SEP)))
-			{
-				// Descarta o nome
-				str = strchr(str,FIELD_SEP);
-				if(!str) // Fim de tudo
-					break;
-				str++;
-
-				// IP
-				str2 = strchr(str,FIELD_SEP);
-				if(!str2) // Mensagem mal definida
-					break;
-
-				len = strlen(str)-strlen(str2);
-				strncpy(msgservers[num_msgservs].ip,str,len);
-				msgservers[num_msgservs].ip[len] = '\0';
-
-				// UDP
-				str=++str2;
-				str2=strchr(str,FIELD_SEP);
-				if(!str2) // Mensagem mal definida
-					break;
-				len = strlen(str)-strlen(str2);
-				strncpy(port_udp,str,len);
-				port_udp[len]='\0';
 
 
-				// TCP
-				str=++str2;
-				str2=strchr(str,LINE_SEP);
-				if(!str2) // Mensagem mal definida
-					break;
-
-				len = strlen(str)-strlen(str2);
-				strncpy(port_tcp,str,len);
-				port_tcp[len]='\0';
-
-				msgservers[num_msgservs].upt = atoi(port_udp);
-				msgservers[num_msgservs].tpt = atoi(port_tcp);
-
-				// Copia mensagem só no fim de todos os campos lidos
-				// To DO ...
-				num_msgservs++;
-			}
-		}
-	}
-	int i;
-	if(num_msgservs==0){
-		printf("NENHUM SERVIDOR ATIVO\n");
-		return;
-	}
-	for (i = 0; i <num_msgservs; i++) {
-		printf("Servidor %d - IP: %s,\t UDP: %d,\t TCP: %d\n",i,msgservers[i].ip,msgservers[i].upt,msgservers[i].tpt);
-	}
-}
 
 
 void readArgs(char ** argv,int argc){
@@ -263,7 +182,8 @@ void keyboardRead(int fdIdServer){
     sscanf(buffer,"%s",command);
 
     if(strcmp("show_servers",command)==0){
-      getServers(fdIdServer);
+      getServers(fdIdServer,msgservers,&num_msgservs,appspec.siip,appspec.sipt);
+			printServers(msgservers,num_msgservs);
     }else if(strcmp("show_messages",command)==0){
       printMessageList(m);
     }else if(strcmp("join",command)==0){
@@ -326,8 +246,10 @@ int main(int argc, char *argv[])
 	int fdIdTCPAccept = tcpBindListen(appspec.tpt);
 
   // connect to all and save fd
-  getServers(fdIdUDP);
-  msgservFd = createFdList();
+  printf("ola\n");
+  getServers(fdIdUDP,msgservers,&num_msgservs,appspec.siip,appspec.sipt);
+	printf("ola2\n");
+	msgservFd = createFdList();
   printf("go connect\n");
   for (i = 0; i < num_msgservs; i++){
       if(msgservers[i].tpt == appspec.tpt)// comparar ip tb
