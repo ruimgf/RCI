@@ -21,11 +21,13 @@ void insertMessageListEnd(messageList * m , char * message, int lc){
     messageNode * insertItem;
     aux = m->end;
     int int_lc;
+
     m->nmessages++;
-    if(m->nmessages>m->maxmessages){
+    if(m->nmessages > m->maxmessages){
       m->nmessages = m->maxmessages;
       aux = m->begin;
       m->begin = m->begin->next;
+      m->begin->prev == NULL;
       free(aux);
     }
 
