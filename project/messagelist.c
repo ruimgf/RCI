@@ -93,7 +93,6 @@ char * getAllMessages(messageList * m){
   }
   sprintf(str,"\n");
   strcat(ret,str);
-  printf("%s\n",ret);
   return ret;
 
 }
@@ -106,9 +105,11 @@ void saveMessages(messageList * m, char * messages){
    char strlc[10];
    char * nextLine;
    char * begin_string;
-   
+
    curLine = strchr(curLine, '\n');
 
+   if(strlen(messages)<12)
+      return;
 
    curLine++; // skipe SMESSAGES
    while(curLine)
