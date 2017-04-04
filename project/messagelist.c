@@ -21,11 +21,11 @@ void insertMessageListEnd(messageList * m , char * message, int lc){
     int int_lc;
 
     if(lc == -1){
+      m->actualLc++;
       int_lc = m->actualLc;
-      m->actualLc++;
     }else{
-      int_lc = max_1(m->actualLc,lc) + 1;
-      m->actualLc++;
+      m->actualLc = max_1(m->actualLc,lc) + 1;
+      int_lc = m->actualLc;
     }
 
     insertItem = (messageNode *)malloc(sizeof(messageNode));

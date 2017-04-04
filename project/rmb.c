@@ -16,7 +16,7 @@ void help()
 	printf("\n RMB APP COMMANDS\n");
 	printf(" show_servers             -identities of registed message servers \n");
 	printf(" publish message          -text message publication with 140 characters maximum \n");
-	printf(" show_lastest_messages n  -last n messages saved in message servers \n");
+	printf(" show_latest_messages n  -last n messages saved in message servers \n");
 	printf(" exit                     -application exit\n\n");
 }
 
@@ -98,7 +98,7 @@ void keyboardRead(int random_server)
 			sprintf(buffer,"PUBLISH %s",message);
 			publishMessage(buffer,random_server);
 		}
-		else if(strcmp("show_lastest_messages",command)==0)
+		else if(strcmp("show_latest_messages",command)==0)
 		{
 			showLastMessages(command, random_server);
 		}

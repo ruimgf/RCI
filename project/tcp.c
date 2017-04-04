@@ -108,7 +108,7 @@ int tcpWrite(int tcp_descriptor,char * mensage, int length){
     if (tcp_descriptor == -1 || mensage == NULL || length <= 0){
       return(-2);
     }
-    while(nsend!=length){
+    while(nsend<length){
       n = send(tcp_descriptor,mensage+nsend,length-nsend, 0);
       if(n==-1)
           return -1;

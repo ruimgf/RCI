@@ -11,6 +11,8 @@
 
 #define REFRESH_RATE 5
 
+
+
 typedef struct appSpec_{
 	char name[20];    //endereço IP
 	char ip[16];      //endereço IP
@@ -30,20 +32,29 @@ messageList * m;
 char test_reg[100];
 appSpec appspec;
 int reg = 0;
-
+int fdIdUDP;
+int fdIdTCPAccept;
 
 void wrongUse(){
   printf("Wrong Program Usage : msgserv –n name –j ip -u upt –t tpt [-i siip] [-p sipt] [–m m] [–r r] \n");
   exit(-1);
 }
 
+void close_correct(){
+	int i;
+	for(i = 0; i<FdListLen(msgservFd); i++ ){
+			int fd = getNFd(msgservFd,i);
+			close(fd);
+	}
+	close(fdIdUDP);
 
+}
 
 
 
 void readArgs(char ** argv,int argc){
 	char aux[10];
-   printf("argc %d\n", argc);
+
 
   appspec.name[0]='\0';
   appspec.ip[0]='\0';
@@ -51,8 +62,8 @@ void readArgs(char ** argv,int argc){
   appspec.tpt=-1;
   appspec.siip[0]='\0';
   appspec.sipt=-1;
-  appspec.m=-1;
-  appspec.r=-1;
+  appspec.m=200;
+  appspec.r=10;
 
   if(argc < 9 || argc > 17)
   {
@@ -206,16 +217,24 @@ void tcpRequest(int fdTCPread){
 		char buffer[BUFFERSIZE];
 		char command[50];
 		int n;
+
 		n = tcpRead(fdTCPread,buffer,BUFFERSIZE);
-		buffer[n] = '\0';
-		sscanf(buffer,"%s\n",command);
-		if(!strcmp(command,"SGET_MESSAGES")){
-			char * send  = getAllMessages(m);
-			tcpWrite(fdTCPread,send,strlen(send));
+		if(n > 0){
+			buffer[n] = '\0';
+			sscanf(buffer,"%s\n",command);
+			if(!strcmp(command,"SGET_MESSAGES")){
+				char * send  = getAllMessages(m);
+				tcpWrite(fdTCPread,send,strlen(send));
+			}
+			if(!strcmp(command,"SMESSAGES")){
+				saveMessages(m,buffer);
+			}
+		}else{
+			printf("error socket was closed\n");
+			close(fdTCPread);
+			removeFdListEnd(msgservFd,fdTCPread);
 		}
-		if(!strcmp(command,"SMESSAGES")){
-			saveMessages(m,buffer);
-		}
+
 }
 
 void handler(int a){
@@ -241,16 +260,16 @@ int main(int argc, char *argv[])
   time_t select_ini, select_end;
 	readArgs(argv,argc);
 
-  int fdIdUDP = udpServer(appspec.upt);
+  fdIdUDP = udpServer(appspec.upt);
 
-	int fdIdTCPAccept = tcpBindListen(appspec.tpt);
+	fdIdTCPAccept = tcpBindListen(appspec.tpt);
 
   // connect to all and save fd
-  printf("ola\n");
+
   getServers(fdIdUDP,msgservers,&num_msgservs,appspec.siip,appspec.sipt);
-	printf("ola2\n");
+
 	msgservFd = createFdList();
-  printf("go connect\n");
+
   for (i = 0; i < num_msgservs; i++){
       if(msgservers[i].tpt == appspec.tpt)// comparar ip tb
         continue;
@@ -261,11 +280,11 @@ int main(int argc, char *argv[])
       }
 
   }
-  printf("end connect\n");
+
   // send message to get all messages
 	struct timeval tr;
 	int lenFdList = FdListLen(msgservFd);
-	printf("end len\n");
+
 	if(lenFdList > 0){
 		// pedir mensagens todas
 
@@ -273,23 +292,21 @@ int main(int argc, char *argv[])
 		int p=0;
 		while(1){
 			int fdGetMessages = getNFd(msgservFd,p);
-			printf("go send\n");
+
 			tcpWrite(fdGetMessages,buffer,strlen(buffer));
 			FD_ZERO(&rfds);
 			FD_SET(fdGetMessages,&rfds);
 			tr.tv_usec = 0;
 			tr.tv_sec = 1;
-			//counter=select(fdGetMessages+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tr);
-			printf("end select\n");
+			counter=select(fdGetMessages+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tr);
+
 			if(counter == 0 ){// error try another
 				p++;
 			}else{
 					int n = tcpRead(fdGetMessages,buffer,BUFFERSIZE);
 					buffer[n] = '\0';
-					//printf("%s\n",buffer);
+
 					saveMessages(m,buffer);
-					printf("save\n");
-					//save msg
 					break;
 			}
 
@@ -312,6 +329,7 @@ int main(int argc, char *argv[])
     fdMax = max(fdMax, fdIdUDP);
     FD_SET(fdIdTCPAccept,&rfds);
 		fdMax = max(fdIdTCPAccept, fdMax);
+		//printf("%d\n",FdListLen(msgservFd));
 		for(i = 0; i<FdListLen(msgservFd); i++ ){
 				fdTCPread = getNFd(msgservFd,i);
 				FD_SET(fdTCPread,&rfds);
@@ -322,7 +340,7 @@ int main(int argc, char *argv[])
 
     counter=select(fdMax+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tr);
     select_end = time(0);
-    if(select_end - select_ini >= REFRESH_RATE){
+    if(select_end - select_ini >= appspec.r){
       select_ini = time(0);
       sprintf(test_reg,"REG %s;%s;%d;%d",appspec.name,appspec.ip,appspec.upt,appspec.tpt);
 			if(reg==1){
@@ -332,11 +350,12 @@ int main(int argc, char *argv[])
         	exit(-1);
       	}
 			}
-      tr.tv_sec = REFRESH_RATE;
+      tr.tv_sec = appspec.r;
     }else{
-      tr.tv_sec = REFRESH_RATE - (select_end - select_ini);
+      tr.tv_sec = appspec.r - (select_end - select_ini);
     }
     if(counter<0){
+			printf("error on select\n");
       exit(1);//errror
     }
 
@@ -366,6 +385,6 @@ int main(int argc, char *argv[])
 
 
   }
-  close(fdIdUDP);
+
 	return 0;
 }
