@@ -28,7 +28,7 @@ void getServers(int myFd ,msgserv msgservers[100],int  * num_msg, char * siip, i
   if(select(myFd+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tr))
 	{
 		nread=udpRead(myFd, buffer, BUFFERSIZE);
-
+    
 		if (nread >= 0)
 		{
 			buffer[nread] = '\0';
@@ -101,4 +101,19 @@ void printServers(msgserv msgservers[100], int num_msgservs){
           i, msgservers[i].name,msgservers[i].ip,msgservers[i].upt,
           msgservers[i].tpt);
   }
+}
+
+////////////////////////////// siPortIp  //////////////////////////
+
+void siPortIp(char * siip, int * sipt)
+{
+	struct hostent *serverid;
+	struct in_addr *serverid_ip;
+	if((serverid=gethostbyname("tejo.tecnico.ulisboa.pt"))==NULL)
+		exit(1);
+
+	serverid_ip=(struct in_addr*)serverid->h_addr_list[0];
+
+	sprintf(siip,"%s",inet_ntoa(*serverid_ip));
+	*sipt = 59000;
 }

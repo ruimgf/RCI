@@ -25,8 +25,11 @@ void publishMessage(char* message, int n_server)
 {
   //send through socket myFd "message" to message server number
   //n_server chosen randomly
-  udpWriteTo(myFd,message,strlen(message),msgservers[n_server].ip,
-             msgservers[n_server].upt);
+  if(udpWriteTo(myFd,message,strlen(message),msgservers[n_server].ip,
+             msgservers[n_server].upt)==-1){
+		printf("erro send\n");
+		exit(-1);
+	}
 }
 
 ///////////////////////// show last messages /////////////////////////
@@ -36,30 +39,39 @@ void showLastMessages (char * command, int n_server)
 	int n,len, nread;
 	struct timeval tr;
 	fd_set rfds;
-	tr.tv_sec = REFRESH_RATE;
-
+	tr.tv_sec = 2;
+	tr.tv_usec = 0;
 	FD_ZERO(&rfds);
 	FD_SET(myFd,&rfds);
 
-	sscanf(buffer,"%s %d",command,&n);
+	if(sscanf(buffer,"%s %d",command,&n)!=2){
+		printf("invalid command\n");
+		help();
+		return;
+	}
 	sprintf(buffer,"GET_MESSAGES %d",n);
 	len=strlen(buffer);
-
+	printf("%s\n",buffer);
 	if (udpWriteTo(myFd, buffer, len, msgservers[n_server].ip,
       msgservers[n_server].upt) < 0)
 	{
 		printf("ERROR: udp servers didint write\n");
+		exit(-1);
 	}
 
-	if(select(myFd+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tr))
+
+	if(select(myFd+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tr)>0)
 	{
 		nread=udpRead(myFd, buffer, BUFFERSIZE);
 		if (nread >= 0)
-			write(1,buffer,nread);
+			if(write(1,buffer,nread)==-1){
+				exit(-1);
+			}
 	}
 	else
 	{
 		printf("ERROR: server didint answer\n");
+		exit(-1);
 	}
 }
 
@@ -118,20 +130,6 @@ void keyboardRead(int random_server)
 	}
 }
 
-////////////////////////////// siPortIp  //////////////////////////
-
-void siPortIp()
-{
-	struct hostent *serverid;
-	struct in_addr *serverid_ip;
-	if((serverid=gethostbyname("tejo.tecnico.ulisboa.pt"))==NULL)
-		exit(1);
-	serverid_ip=(struct in_addr*)serverid->h_addr_list[0];
-
-	sprintf(siip,"%s",inet_ntoa(*serverid_ip));
-	sipt = 59000;
-}
-
 
 int main(int argc, char ** argv)
 {
@@ -168,7 +166,7 @@ int main(int argc, char ** argv)
 	else
 	{
     // Default IP and PORT of server of identities
-		siPortIp();
+		siPortIp(siip,&sipt);
 		printf("Identities server ip: %s \n",siip);
 		printf("Identities server port: %d \n",sipt);
 	}
@@ -188,7 +186,7 @@ int main(int argc, char ** argv)
 
   // Random selection of message server to comunicate with
 	int random_server = rand()%num_msgservs;
-
+	printf("Connect to msgserv :%s on port %d\n",msgservers[random_server].ip,msgservers[random_server].upt);
 	while(1)
 	{
 		printf("Enter a command:  ");

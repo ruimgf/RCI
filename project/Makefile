@@ -8,8 +8,8 @@ DEPS = udp.o messagelist.o tcp.o fdlist.o geral.o
 all: $(TARGET)
 
 geral.o : geral.c geral.h
-		$(CC) $(CFLAGS) -c geral.c
-		
+	$(CC) $(CFLAGS) -c geral.c
+
 messageList.o : messagelist.c messagelist.h
 	$(CC) $(CFLAGS) -c messagelist.c
 

@@ -11,7 +11,7 @@ int tcpBindListen(int server_port){
   int fd;
   struct sockaddr_in addr;
   if((fd=socket(AF_INET,SOCK_STREAM,0))==-1)
-      exit(1);//error
+      return -1;
 
 
   memset((void*)&addr,(int)'\0',sizeof(addr));
@@ -20,13 +20,12 @@ int tcpBindListen(int server_port){
   addr.sin_port=htons(server_port);
 
   if(bind(fd,(struct sockaddr*)&addr,sizeof(addr))==-1){
-      printf("Erro no Bind\n");
-      exit(1);//error
+      return -1;
   }
 
 
   if(listen(fd,5)==-1)
-    exit(1);//error
+    return -1;
 
   return fd;
 }
@@ -37,7 +36,7 @@ int tcpAccept(int myFd){
     struct sockaddr_in addr;
     addrlen=sizeof(addr);
     if((newFd=accept(myFd,(struct sockaddr*)&addr,&addrlen))==-1)
-      exit(1);
+      return -1;
     return newFd;
 }
 
@@ -61,10 +60,6 @@ int tcpConnect(char * server_ip, int server_port){
     return(-1);
   }
 
-  if(server_ip == NULL || server_port <= 0){
-    return(-2);
-  }
-
   server_addr.sin_family = AF_INET;
   server_addr.sin_port = htons(server_port);
 
@@ -75,25 +70,13 @@ int tcpConnect(char * server_ip, int server_port){
   err = connect(sock_fd, (const struct sockaddr *) &server_addr,len_endereco);
 
   if (err == -1){
-    printf("conn error\n");
     return(-1);
   }
 
   return(sock_fd);
 }
 
-/**
- * [tcp_close Termina a ligação entre cliente e servidor]
- * @param tcp_descriptor [Indentificador do servidor]
- */
-void tcpClose(int tcp_descriptor){
 
-  if (tcp_descriptor == -1 ){
-    return;
-  }
-  close(tcp_descriptor);
-
-}
 /**
  * [tcp_write Trata operções de escrita por parte dos clientes]
  * @param  tcp_descriptor [identificador do servidor]
@@ -120,19 +103,7 @@ int tcpWrite(int tcp_descriptor,char * mensage, int length){
 
 }
 
-/**
- * [tcp_read operação leitura por parte do cliente]
- * @param  tcp_descriptor [identificador do servidor]
- * @param  buffers           [chave]
- * @param  length  [tamanho para receber valor]
- * @return               [nr_bytes lidos ou -1,-2 em casos de erro]
- */
-int tcpRead(int tcp_descriptor, char * buffer, int length){
 
-  //verificar argumentos
-  if (tcp_descriptor == -1 || buffer == NULL || length <= 0){
-    return(-2);
-  }
-    /** pode haver aquui um erro se m_s.value_length > sizeof(value) **/
+int tcpRead(int tcp_descriptor, char * buffer, int length){
   return recv(tcp_descriptor,buffer,length, 0);
 }

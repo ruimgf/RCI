@@ -22,5 +22,18 @@ typedef struct msgserv_{
 	int tpt;        //TCP port
 }msgserv;
 
+typedef struct appSpec_{
+	char name[20];    //endereço IP
+	char ip[16];      //endereço IP
+  int upt;          //port udp
+	int tpt;          //port tcp
+  char siip[16];    //IP do servidor de identidades
+  int sipt;         //porto do servidor de identidades
+  int m;            //nmr max de msg guardadas
+  int r;            //time out
+}appSpec;
+
+
 void getServers(int myFd ,msgserv msgservers[100],int  * num_msg, char * siip, int sipt);
 void printServers(msgserv msgservers[100], int num_msgservs);
+void siPortIp(char * siip, int * sipt);

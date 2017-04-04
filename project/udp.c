@@ -10,12 +10,6 @@ int udpSockect()
   return(sock_fd);
 }
 
-void udpClose(int udp_descriptor)
-{
-  if (udp_descriptor == -1 )
-    return;
-  close(udp_descriptor);
-}
 
 int udpWriteTo(int udp_descriptor,char * mensage, int length,char * ip, int port)
 {
@@ -26,8 +20,6 @@ int udpWriteTo(int udp_descriptor,char * mensage, int length,char * ip, int port
     server.sin_port = htons(port);
 
     inet_aton(ip, &server.sin_addr);
-    if (udp_descriptor == -1 || mensage == NULL || length <= 0  || ip == NULL || port < 0)
-      return(-2);
 
     return sendto(udp_descriptor,mensage, length, 0, (struct sockaddr*) &server, slen);
 }
@@ -38,11 +30,7 @@ int udpRead(int udp_descriptor, char * buffer, int length)
   socklen_t addrlen;
 
   addrlen = sizeof(addr);
-  //verificar argumentos
-  if (udp_descriptor == -1 || buffer == NULL || length <= 0)
-    return(-2);
 
-    /** pode haver aquui um erro se m_s.value_length > sizeof(value) **/
   return recvfrom(udp_descriptor,buffer,length,0,(struct sockaddr*)&addr,&addrlen);
 }
 
@@ -50,28 +38,17 @@ int udpRead(int udp_descriptor, char * buffer, int length)
 int udpReadAndGetSender(int udp_descriptor, char * buffer, int length , struct sockaddr_in ** addr){
   struct sockaddr_in * addr_aux = malloc(sizeof(struct sockaddr_in));
   *addr = addr_aux;
-  int nread=0;
-  socklen_t addrlen;
-  //verificar argumentos
-  if (udp_descriptor == -1 || buffer == NULL || length <= 0){
-    return(-2);
-  }
 
-  nread=recvfrom(udp_descriptor,buffer,length,0,(struct sockaddr*)addr_aux,&addrlen);
-  return nread;
+  socklen_t addrlen;
+  return recvfrom(udp_descriptor,buffer,length,0,(struct sockaddr*)addr_aux,&addrlen);
 }
 
 
 int udpWriteToWithSockAddr(int udp_descriptor,char * mensage, int length,struct sockaddr_in server){
-    //verificar argumentos
+
     size_t slen = sizeof(server);
-    if (udp_descriptor == -1 || mensage == NULL || length <= 0){
-      return(-2);
-    }
 
-    sendto(udp_descriptor,mensage, length, 0, (struct sockaddr*) &server, slen);
-
-    return 0;
+    return sendto(udp_descriptor,mensage, length, 0, (struct sockaddr*) &server, slen);
 
 }
 
@@ -79,11 +56,18 @@ int udpServer(int port){
   int fd = socket(AF_INET,SOCK_DGRAM,0);
   struct sockaddr_in serveraddr;
 
+  if(fd == -1){
+    return -1;
+  }
+
   memset((void*)&serveraddr,(int)'\0',sizeof(serveraddr));
   serveraddr.sin_family = AF_INET;
   serveraddr.sin_addr.s_addr = htonl(INADDR_ANY);
   serveraddr.sin_port = htons((u_short)port);
 
-  bind(fd,(struct sockaddr*)&serveraddr,sizeof(serveraddr));
+  if(bind(fd,(struct sockaddr*)&serveraddr,sizeof(serveraddr))==-1){
+    return -1;
+  }
+
   return fd;
 }
