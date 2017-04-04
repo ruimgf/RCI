@@ -31,6 +31,25 @@ void insertFdListEnd(fdList * m ,int fd){
     }
 }
 
+void removeFdListEnd(fdList * m,int fd){
+    fdNode * aux = m->begin;
+    fdNode * aux2=m->begin->next;
+    if(aux!=NULL){
+      if(aux->fd==fd){
+        m->begin = aux->next;
+        free(aux);
+        return;
+      }
+    }
+    while(aux2!=NULL){
+      if(aux2->fd==fd){
+        aux->next = aux2->next;
+        free(aux2);
+        return;
+      }
+    }
+}
+
 void freeFdList(fdList * m){
     fdNode * aux = m->begin;
     fdNode * aux1;

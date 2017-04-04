@@ -1,5 +1,10 @@
 #include "messagelist.h"
 
+int max_1(int x, int y){
+    if(x>y)
+      return x;
+    return y;
+}
 
 messageList  * createMessageList(){
     messageList  * m1 = malloc(sizeof(messageList));
@@ -13,12 +18,20 @@ void insertMessageListEnd(messageList * m , char * message, int lc){
     messageNode * aux;
     messageNode * insertItem;
     aux = m->end;
+    int int_lc;
 
+    if(lc == -1){
+      int_lc = m->actualLc;
+      m->actualLc++;
+    }else{
+      int_lc = max_1(m->actualLc,lc) + 1;
+      m->actualLc++;
+    }
 
     insertItem = (messageNode *)malloc(sizeof(messageNode));
 
     strcpy(insertItem->message,message);
-    insertItem->lc = lc;
+    insertItem->lc = int_lc;
     insertItem->next = NULL;
 
 
@@ -37,6 +50,8 @@ void insertMessageListEnd(messageList * m , char * message, int lc){
 void printMessageList(messageList * m){
     messageNode * aux;
     aux = m->begin;
+    if(aux==NULL)
+      printf("Lista vazia\n");
     while(aux != NULL){
         printf("%s %d\n",aux->message,aux->lc);
         aux = aux->next;

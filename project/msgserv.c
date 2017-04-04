@@ -6,6 +6,7 @@
 #include "messagelist.h"
 #include "fdlist.h"
 #include <time.h>
+#include <signal.h>
 
 #define FIELD_SEP ';'
 #define LINE_SEP '\n'
@@ -35,7 +36,6 @@ int num_msgservs = 0;
 // Global Variables
 messageList * m;
 char test_reg[100];
-int lc = 0;
 appSpec appspec;
 int reg = 0;
 
@@ -122,7 +122,6 @@ void getServers(int myFd)
 }
 
 
-
 void readArgs(char ** argv,int argc){
 	char aux[10];
    printf("argc %d\n", argc);
@@ -184,7 +183,7 @@ void readArgs(char ** argv,int argc){
       }
     }
   }
-    if(strlen(appspec.name)==0 || strlen(appspec.ip)==0 || appspec.upt==-1 || appspec.tpt==-1)
+  if(strlen(appspec.name)==0 || strlen(appspec.ip)==0 || appspec.upt==-1 || appspec.tpt==-1)
       wrongUse();
 }
 
@@ -217,14 +216,17 @@ void readRmb(int fdIdServer){
     strncpy(message, buffer+8, 140);
     message[140] = '\0';
 
-    insertMessageListEnd(m,message,lc);
-		sprintf(buffer,"SMESSAGES\n%d;%s\n\n",lc,message);
+    insertMessageListEnd(m,message,-1);
+		sprintf(buffer,"SMESSAGES\n%d;%s\n\n",m->actualLc,message);
 		int i;
 		for(i = 0; i<FdListLen(msgservFd); i++ ){
 				int fdTCPread = getNFd(msgservFd,i);
-				tcpWrite(fdTCPread,buffer,strlen(buffer));
+				if(tcpWrite(fdTCPread,buffer,strlen(buffer))==-1){
+					removeFdListEnd(msgservFd,fdTCPread);
+					printf("error\n");
+				}
 		}
-    lc++;
+
     // send message to all servers
 
   }else if(strcmp(command,"GET_MESSAGES")==0){
@@ -289,7 +291,6 @@ void tcpRequest(int fdTCPread){
 		sscanf(buffer,"%s\n",command);
 		if(!strcmp(command,"SGET_MESSAGES")){
 			char * send  = getAllMessages(m);
-			printf("%d\n",fdTCPread);
 			tcpWrite(fdTCPread,send,strlen(send));
 		}
 		if(!strcmp(command,"SMESSAGES")){
@@ -312,7 +313,7 @@ int main(int argc, char *argv[])
 	int fdTCPread;
 	int counter=1	;
 	void (*old_handler)(int);
-	if((old_handler=signal(SIGPIPE,handler))==SIG_ERR)
+	if((old_handler=signal(SIGPIPE,SIG_IGN))==SIG_ERR)
 		exit(1);
 
 

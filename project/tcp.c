@@ -101,15 +101,21 @@ void tcpClose(int tcp_descriptor){
  * @return               [-1 em caso de erro 0 no caso de sucesso]
  */
 int tcpWrite(int tcp_descriptor,char * mensage, int length){
-    
+
     //verificar argumentos
+    int nsend = 0;
+    int n;
     if (tcp_descriptor == -1 || mensage == NULL || length <= 0){
       return(-2);
     }
-
-    if(send(tcp_descriptor,mensage,length, 0)==-1){
-      return(-1);
+    while(nsend!=length){
+      n = send(tcp_descriptor,mensage+nsend,length-nsend, 0);
+      if(n==-1)
+          return -1;
+      nsend += n;
     }
+
+
     return 0;
 
 }
