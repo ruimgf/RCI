@@ -22,12 +22,17 @@ msgserv msgservers[100];
 fdList * msgservFd;
 int num_msgservs = 0;
 
-
+/**
+ * [wrongUse description]
+ */
 void wrongUse(){
   printf("Wrong Program Usage : msgserv –n name –j ip -u upt –t tpt [-i siip] [-p sipt] [–m m] [–r r] \n");
   exit(-1);
 }
 
+/**
+ * [close_correct function to exit]
+ */
 void close_correct(){
 	int i;
 	freeMessageList(m);
@@ -40,6 +45,11 @@ void close_correct(){
 	close(fdIdTCPAccept);
 }
 
+/**
+ * [readArgs parse input args]
+ * @param argv
+ * @param argc
+ */
 void readArgs(char ** argv,int argc){
 	char aux[10];
   appspec.name[0]='\0';
@@ -103,12 +113,22 @@ void readArgs(char ** argv,int argc){
       wrongUse();
 }
 
+/**
+ * [max]
+ * @param  x [description]
+ * @param  y [description]
+ * @return   max between x and y
+ */
 int max(int x, int y){
     if(x>y)
       return x;
     return y;
 }
 
+/**
+ * [readRmb process requests from CLIENT]
+ * @param fdIdServer [my udp SOCKET]
+ */
 void readRmb(int fdIdServer){
   char buffer[BUFFERSIZE];
   char command[50];
@@ -202,7 +222,10 @@ void keyboardRead(int fdIdServer){
     }
   }
 }
-
+/**
+ * [tcpRequest process a request from another server]
+ * @param fdTCPread [other server fd]
+ */
 void tcpRequest(int fdTCPread){
 		char buffer[BUFFERSIZE];
 		char command[50];
@@ -228,9 +251,6 @@ void tcpRequest(int fdTCPread){
 
 }
 
-void handler(int a){
-		printf("um servidor foi a baixo\n");
-}
 
 int main(int argc, char *argv[])
 {
@@ -242,7 +262,10 @@ int main(int argc, char *argv[])
 	int fdSave;
 	int fdTCPread;
 	int counter=1	;
+
 	void (*old_handler)(int);
+
+  // ignore signal SIGPIPE
 	if((old_handler=signal(SIGPIPE,SIG_IGN))==SIG_ERR)
 		exit(1);
 
@@ -251,38 +274,34 @@ int main(int argc, char *argv[])
   time_t select_ini, select_end;
 
   readArgs(argv,argc);
+
   m = createMessageList(appspec.m);
+  msgservFd = createFdList();
   fdIdUDP = udpServer(appspec.upt);
-
 	fdIdTCPAccept = tcpBindListen(appspec.tpt);
-
-  // connect to all and save fd
 
   getServers(fdIdUDP,msgservers,&num_msgservs,appspec.siip,appspec.sipt);
 
-	msgservFd = createFdList();
-
+  // connect to all servers
   for (i = 0; i < num_msgservs; i++){
-      if(strcmp(appspec.name,msgservers[i].name)==0){
+      if(strcmp(appspec.name,msgservers[i].name)==0){ // if this server on list ingnore it
         continue;
       }
       fdSave = tcpConnect(msgservers[i].ip,msgservers[i].tpt);
-      if(fdSave!=-1){
+      if(fdSave!=-1){ // save fd
 					printf("connect\n");
           insertFdListEnd(msgservFd,fdSave);
-
           printf("%s %d\n",msgservers[i].ip, msgservers[i].tpt);
-
       }
 
   }
 
-  // send message to get all messages
+
 	struct timeval tr;
 	int lenFdList = FdListLen(msgservFd);
 
 	if(lenFdList > 0){
-		// pedir mensagens todas
+		// request messages
 
 		sprintf(buffer,"SGET_MESSAGES\n");
 		int p=0;
@@ -307,12 +326,12 @@ int main(int argc, char *argv[])
             n = tcpRead(fdGetMessages,buffer+nread,BUFFERSIZE-nread); // quando há muitas mensagens só numa leitura não funciona
             nread += n;
             buffer[nread] = '\0';
-            if(saveMessages(m,buffer)==0){ // concluido com sucesso
+            if(saveMessages(m,buffer)==0){ // concluido com sucesso, mensagem completa
               break;
             }
 
           }
-					break;
+					break; // sucess
 			}
 
 		}
@@ -323,11 +342,12 @@ int main(int argc, char *argv[])
 
   tr.tv_usec = 0;
   select_end = select_ini;
-  tr.tv_sec = REFRESH_RATE;
+  tr.tv_sec = appspec.r;
 
   while(1){
-    FD_ZERO(&rfds);
 
+    // set all fd
+    FD_ZERO(&rfds);
     FD_SET(1,&rfds);
     fdMax = 0;
     FD_SET(fdIdUDP,&rfds);
@@ -342,10 +362,11 @@ int main(int argc, char *argv[])
 
 		}
 
-
+    // wait for a request
     counter=select(fdMax+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tr);
     select_end = time(0);
-    if(select_end - select_ini >= appspec.r){
+
+    if(select_end - select_ini >= appspec.r){ // if is time to refresh registration
       select_ini = time(0);
       sprintf(test_reg,"REG %s;%s;%d;%d",appspec.name,appspec.ip,appspec.upt,appspec.tpt);
 			if(reg==1){
@@ -363,16 +384,16 @@ int main(int argc, char *argv[])
 			printf("error on select\n");
       exit(1);//errror
     }
-
+    // check all fd
     if(counter > 0 ){
       if(FD_ISSET(fdIdUDP,&rfds)){
         readRmb(fdIdUDP);
       }
-      if(FD_ISSET(1,&rfds)){
+      if(FD_ISSET(1,&rfds)){ // keyboard
         keyboardRead(fdIdUDP);
       }
-      if(FD_ISSET(fdIdTCPAccept,&rfds)){
 
+      if(FD_ISSET(fdIdTCPAccept,&rfds)){
         int fdSave = tcpAccept(fdIdTCPAccept);
         insertFdListEnd(msgservFd,fdSave);
 
@@ -385,7 +406,6 @@ int main(int argc, char *argv[])
 		      }
 			}
 
-			// if para as leituras
     }
 
 
