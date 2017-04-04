@@ -72,7 +72,8 @@ void readArgs(char ** argv,int argc){
   }
   else
   {
-    for(int i=0; i<(argc-1)/2 ; i++)
+		int i;
+    for(i=0; i<(argc-1)/2 ; i++)
     {
       if(strcmp(argv[1+2*i],"-n")==0)     //impares -n
       {
