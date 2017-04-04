@@ -143,7 +143,11 @@ void saveMessages(messageList * m, char * messages){
    char * begin_string;
 
    curLine = strchr(curLine, '\n');
-
+   int l = strlen(messages);
+   if(messages[l]!='\n'&&messages[l-1]!='\n'){
+     printf("mensagem mal recebida\n");
+     return;
+   }
    if(strlen(messages)<12)
       return;
 

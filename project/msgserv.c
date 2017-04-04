@@ -31,11 +31,11 @@ void wrongUse(){
 void close_correct(){
 	int i;
 	freeMessageList(m);
-	freeFdList(msgservFd);
 	for(i = 0; i<FdListLen(msgservFd); i++ ){
 			int fd = getNFd(msgservFd,i);
 			close(fd);
 	}
+  freeFdList(msgservFd);
 	close(fdIdUDP);
 	close(fdIdTCPAccept);
 }
@@ -115,6 +115,7 @@ void readRmb(int fdIdServer){
   struct sockaddr_in * addr_client;
   int n = udpReadAndGetSender(fdIdServer,buffer,BUFFERSIZE,&addr_client);
   // if rmb send \0 or not i will not have problems with str functions
+
   if(n == -1){
     printf("erro n\n");
     exit(-2);
@@ -208,6 +209,7 @@ void tcpRequest(int fdTCPread){
 		int n;
 
 		n = tcpRead(fdTCPread,buffer,BUFFERSIZE);
+
 		if(n > 0){
 			buffer[n] = '\0';
 			sscanf(buffer,"%s\n",command);
@@ -247,7 +249,8 @@ int main(int argc, char *argv[])
 
 
   time_t select_ini, select_end;
-	readArgs(argv,argc);
+
+  readArgs(argv,argc);
   m = createMessageList(appspec.m);
   fdIdUDP = udpServer(appspec.upt);
 
@@ -267,7 +270,9 @@ int main(int argc, char *argv[])
       if(fdSave!=-1){
 					printf("connect\n");
           insertFdListEnd(msgservFd,fdSave);
+
           printf("%s %d\n",msgservers[i].ip, msgservers[i].tpt);
+
       }
 
   }
@@ -295,14 +300,16 @@ int main(int argc, char *argv[])
 			counter=select(fdGetMessages+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tr);
 
 			if(counter > 0 ){// error try another
+          sleep(1);
 					int n = tcpRead(fdGetMessages,buffer,BUFFERSIZE);
 					buffer[n] = '\0';
-					saveMessages(m,buffer);
+          saveMessages(m,buffer);
 					break;
 			}
 
 		}
 	}
+
 
   select_ini = time(0);
 

@@ -12,7 +12,7 @@
 #define REFRESH_RATE 5
 #define FIELD_SEP ';'
 #define LINE_SEP '\n'
-#define BUFFERSIZE 3000
+#define BUFFERSIZE 10000
 
 /* ------------------   MESSAGE SERVERS    -------------------------- */
 typedef struct msgserv_{

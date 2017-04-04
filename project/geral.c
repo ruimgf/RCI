@@ -22,6 +22,7 @@ void getServers(int myFd ,msgserv msgservers[100],int  * num_msg, char * siip, i
   if (udpWriteTo(myFd, "GET_SERVERS", 11, siip, sipt) < 0)
 	{
     printf("ERROR: udp servers didint write\n");
+    exit(-1);
     return;
 	}
 
@@ -90,6 +91,7 @@ void getServers(int myFd ,msgserv msgservers[100],int  * num_msg, char * siip, i
   else
 	{
 		printf("ERROR: server didint answer\n");
+    exit(-1);
 	}
 }
 
@@ -119,4 +121,6 @@ void siPortIp(char * siip, int * sipt)
 
 	sprintf(siip,"%s",inet_ntoa(*serverid_ip));
 	*sipt = 59000;
+  
+
 }

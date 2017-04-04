@@ -38,7 +38,6 @@ int udpRead(int udp_descriptor, char * buffer, int length)
 int udpReadAndGetSender(int udp_descriptor, char * buffer, int length , struct sockaddr_in ** addr){
   struct sockaddr_in * addr_aux = malloc(sizeof(struct sockaddr_in));
   *addr = addr_aux;
-
   socklen_t addrlen;
   return recvfrom(udp_descriptor,buffer,length,0,(struct sockaddr*)addr_aux,&addrlen);
 }
