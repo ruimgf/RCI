@@ -8,51 +8,58 @@
 #include <time.h>
 #include "udp.h"
 
+/* ------------------ DEFINES --------------------------------------- */
 #define REFRESH_RATE 5
 #define BUFFERSIZE 3000
 #define FIELD_SEP ';'
 #define LINE_SEP '\n'
 
-// global variables
-int myFd;
-char siip[16];
-int sipt;
-char buffer[BUFFERSIZE];
-int num_msgservs =0;
+/* ------------------ GLOBAL VARIABLES ------------------------------ */
+int myFd;                 //sockect
+char siip[16];            //IP server of identities
+int sipt;                 //PORT server of identities
+char buffer[BUFFERSIZE];  //Buffer to comunicate - read and write
+int num_msgservs =0;      //Number of servers in the network
+
+/* ------------------ STRUCTURE DEFINITION -------------------------- */
+/* ------------------   MESSAGE SERVERS    -------------------------- */
 
 typedef struct msgserv_{
-  char name[10];
-	char ip[16];    //endereço IP
-	int upt;        //port udp
-	int tpt;        //port tcp
+  char name[20];  //name
+	char ip[16];    //IP address
+	int upt;        //UDP port
+	int tpt;        //TCP port
 }msgserv;
 
 msgserv msgservers[100];
 
 
-////////////////////////////// HELP ///////////////////////////////////
-void help(){
-
-	printf(" RMB APP COMMANDS\n");
+/* ------------------ HELP FUNCTION --------------------------------- */
+void help()
+{
+	printf("\n RMB APP COMMANDS\n");
 	printf(" show_servers             -identities of registed message servers \n");
 	printf(" publish message          -text message publication with 140 characters maximum \n");
 	printf(" show_lastest_messages n  -last n messages saved in message servers \n");
-	printf(" exit                     -application exit\n");
+	printf(" exit                     -application exit\n\n");
 }
 
-////////////////////////////// publishMessage /////////////////////////
-void publishMessage(char* message, int r)
+/* ------------------ PUBLISH MESSAGE FUNCTION ---------------------- */
+void publishMessage(char* message, int n_server)
 {
-    udpWriteTo(myFd,message,strlen(message),msgservers[r].ip, msgservers[r].upt);
-    // add here code to send message to server
+  //send through socket myFd "message" to message server number 
+  //n_server chosen randomly
+  udpWriteTo(myFd,message,strlen(message),msgservers[n_server].ip, 
+             msgservers[n_server].upt);
 }
 
-////////////////////////////// getServers//////////////////////////////
+/* ------------------ GET SERVERS FUNCTION -------------------------- */
 void getServers()
 {
-	char port_udp[10],port_tcp[10];
+	char port_udp[10], port_tcp[10];
 	char * str, * str2;
-	int nread,len=0;
+	int nread = 0;
+  int len = 0;
   
   struct timeval tr;
 	fd_set rfds;
@@ -64,7 +71,7 @@ void getServers()
 
   if (udpWriteTo(myFd, "GET_SERVERS", 11, siip, sipt) < 0)
 	{
-		printf("ERROR: udp servers didint write\n");
+    printf("ERROR: udp servers didint write\n");
 	}
 
   if(select(myFd+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tr))
@@ -75,7 +82,7 @@ void getServers()
 		{
 			buffer[nread] = '\0';
 
-			//descarta o SERVERS
+			//Descarta o SERVERS
 			str2=strchr(buffer,LINE_SEP);
       if(!str2) // Mensagem mal definida
         return;
@@ -83,7 +90,7 @@ void getServers()
       num_msgservs=0;
 			while((str=strchr(str2,LINE_SEP)))
 			{
-				// NAME
+				//NAME
 				str = strchr(str2,FIELD_SEP);
         if(!str) // Mensagem mal definida e fim de tudo
 					break;
@@ -136,7 +143,7 @@ void getServers()
 
 ///////////////////////// show last messages /////////////////////////
 
-void showLastMessages (char * command, int r)
+void showLastMessages (char * command, int n_server)
 {
 	int n,len, nread;
 	struct timeval tr;
@@ -150,7 +157,8 @@ void showLastMessages (char * command, int r)
 	sprintf(buffer,"GET_MESSAGES %d",n);
 	len=strlen(buffer);	
 			
-	if (udpWriteTo(myFd, buffer, len, msgservers[r].ip , msgservers[r].upt) < 0)
+	if (udpWriteTo(myFd, buffer, len, msgservers[n_server].ip, 
+      msgservers[n_server].upt) < 0)
 	{
 		printf("ERROR: udp servers didint write\n");
 	}
@@ -158,7 +166,7 @@ void showLastMessages (char * command, int r)
 	if(select(myFd+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tr))
 	{
 		nread=udpRead(myFd, buffer, BUFFERSIZE);
-		if ( nread >= 0)
+		if (nread >= 0)
 			write(1,buffer,nread);
 	}	
 	else
@@ -169,7 +177,7 @@ void showLastMessages (char * command, int r)
 
 
 ////////////////////////////// keyboardRead  //////////////////////////
-void keyboardRead(int r)
+void keyboardRead(int random_server)
 {
 	char command[30];
 	char message[140];
@@ -195,18 +203,21 @@ void keyboardRead(int r)
 		{
 			getServers(msgservers);
 			for(int i=0;i<num_msgservs;i++)
-       printf("Servidor %d - NAME: %s\t IP: %s\t UDP: %d\t TCP: %d\n", i, msgservers[i].name,msgservers[i].ip,msgservers[i].upt,msgservers[i].tpt);
-
+      {
+        printf("Servidor %d - NAME: %s\t IP: %s\t UDP: %d\t TCP: %d\n", 
+              i, msgservers[i].name,msgservers[i].ip,msgservers[i].upt,
+              msgservers[i].tpt);
+      }
 		}
 		else if(strcmp("publish",command)==0)
 		{
 			strncpy(message, buffer+8, 140);
 			sprintf(buffer,"PUBLISH %s",message);
-			publishMessage(buffer,r);
+			publishMessage(buffer,random_server);
 		}
 		else if(strcmp("show_lastest_messages",command)==0)
 		{
-			showLastMessages(command, r);		
+			showLastMessages(command, random_server);		
 		}	
 		else if(strcmp("exit",command)==0)
 		{
@@ -243,16 +254,25 @@ int main(int argc, char ** argv)
 {
 	srand(time(NULL));
 
+  // Testes of aplication arguments
 	if (argc>1)
 	{
-		if(strcmp(argv[1],"-i")==0 && strcmp(argv[3],"-p")==0)
+    // After a -i or -p 
+		if (strcmp(argv[1],"-i")==0 && strcmp(argv[3],"-p")==0)
 		{
+      // IP of server of identities - put as global variable
 			strcpy(siip,argv[2]);
+      // PORT of server of identities - put as global variable
+      // Cast from *char to int
 			sipt=atoi(argv[4]);
 		}
-		else if(strcmp(argv[3],"-i")==0 && strcmp(argv[1],"-p")==0)
+    // After a -p or -i 
+		else if (strcmp(argv[3],"-i")==0 && strcmp(argv[1],"-p")==0)
 		{
+      // IP of server of identities - put as global variable
 			strcpy(siip,argv[2]);
+      // PORT of server of identities - put as global variable
+      // Cast from *char to int 
 			sipt=atoi(argv[4]);
 		}
 		else
@@ -264,30 +284,35 @@ int main(int argc, char ** argv)
 	}
 	else
 	{
+    // Default IP and PORT of server of identities
 		siPortIp();
-		printf("identity server ip: %s \n",siip);
-		printf("identity server port: %d \n",sipt);
+		printf("Identities server ip: %s \n",siip);
+		printf("Identities server port: %d \n",sipt);
 	}
 
+  // Open socket
 	myFd = udpSockect();
 	if(myFd == -1)
 		printf("ERROR in udp socket");
 
-	// mandar mensagem para ir buscar os servidores
+  // Inicialization of message servers available
   getServers();
 	if(num_msgservs==0)
 	{
 		printf("ERROR: there is no server available\n");
 		exit(0);
 	}
-	int r = rand()%num_msgservs;      
+  
+  // Random selection of message server to comunicate with
+	int random_server = rand()%num_msgservs;      
   
 	while(1)
 	{
 		printf("Enter a command:  ");
-		keyboardRead(r);
+		keyboardRead(random_server);
 	}
   
+  // Close socket
   close(myFd);
 
   return 1;
