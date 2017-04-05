@@ -244,8 +244,6 @@ void keyboardRead(int fdIdServer){
 
           }
 
-
-
         int lenFdList = FdListLen(msgservFd);
 
         if(lenFdList > 0){

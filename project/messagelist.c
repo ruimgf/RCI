@@ -18,6 +18,10 @@ int max_1(int x, int y){
  */
 messageList  * createMessageList(int max){
     messageList  * m1 = malloc(sizeof(messageList));
+    if(m1 == NULL){
+      printf("ERROR malloc\n");
+      exit(-1);
+    }
     m1->actualLc = 0;
     m1->begin = NULL;
     m1->end = NULL;

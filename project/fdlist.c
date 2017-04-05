@@ -6,6 +6,10 @@
  */
 fdList  * createFdList(){
     fdList  * m1 = malloc(sizeof(fdList));
+    if(m1 == NULL){
+      printf("ERROR no malloc\n");
+      exit(-1);
+    }
     m1->begin = NULL;
     m1->end = NULL;
     return m1;
@@ -22,7 +26,10 @@ void insertFdListEnd(fdList * m ,int fd){
 
 
     insertItem = (fdNode *)malloc(sizeof(fdNode));
-
+    if(insertItem == NULL){
+      printf("ERROR MALLOC\n");
+      exit(-1);
+    }
 
     insertItem->fd = fd;
     insertItem->next = NULL;
