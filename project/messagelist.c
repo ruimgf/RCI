@@ -55,7 +55,10 @@ void insertMessageListEnd(messageList * m , char * message, int lc){
     }
 
     insertItem = (messageNode *)malloc(sizeof(messageNode));
-
+    if(insertItem == NULL){
+      printf("ERROR : malloc\n");
+      exit(-1);
+    }
     strcpy(insertItem->message,message);
     insertItem->lc = int_lc;
     insertItem->next = NULL;
@@ -111,6 +114,10 @@ char * getLastNmessages(messageList * m, int n){
       char * ret;
       char str[150];
       ret = malloc((9 + 141 * n) * sizeof(char));
+      if(ret == NULL){
+        printf("ERROR : malloc\n");
+        exit(-1);
+      }
       int i;
 
       for( i = 0 ; i < n - 1 ; i++){
@@ -154,7 +161,10 @@ char * getAllMessages(messageList * m){
   char * ret;
   char str[300];
   ret = malloc((9 + 141 * 400) * sizeof(char));
-
+  if(ret == NULL){
+    printf("ERROR : malloc\n");
+    exit(-1);
+  }
   sprintf(ret,"SMESSAGES\n");
   while(aux != NULL){
       sprintf(str,"%d;%s\n",aux->lc,aux->message);

@@ -133,7 +133,7 @@ void readRmb(int fdIdServer){
   char buffer[BUFFERSIZE];
   char command[50];
   struct sockaddr_in * addr_client;
-  size_t slen;
+  socklen_t slen;
   int n = udpReadAndGetSender(fdIdServer,buffer,BUFFERSIZE,&addr_client,&slen);
   // if rmb send \0 or not i will not have problems with str functions
 
@@ -147,7 +147,10 @@ void readRmb(int fdIdServer){
   if (buffer[ln] == '\n'){
       buffer[ln] = '\0';
   }
-  sscanf(buffer,"%s",command);
+  if(sscanf(buffer,"%s",command)!=1){
+    printf("erro read command\n");
+    return;
+  }
 
   if(strcmp(command,"PUBLISH")==0){
     char message[141];
@@ -207,76 +210,81 @@ void keyboardRead(int fdIdServer){
       printf("Unkown command\n");
       return;
     }
-    sscanf(buffer,"%s",command);
+    if(sscanf(buffer,"%s",command)!=1){
+      printf("ERROR : read command \n");
+      return;
+    }
 
     if(strcmp("show_servers",command)==0){
       getServers(fdIdServer,msgservers,&num_msgservs,appspec.siip,appspec.sipt);
 			printServers(msgservers,num_msgservs);
     }else if(strcmp("show_messages",command)==0){
       printMessageList(m);
-    }else if(strcmp("join",command)==0){
-			reg = 1	;
-			sprintf(test_reg,"REG %s;%s;%d;%d",appspec.name,appspec.ip,appspec.upt,appspec.tpt);
-			if(udpWriteTo(fdIdServer,test_reg,strlen(test_reg),appspec.siip,appspec.sipt)==-1){
-				printf("ERROR: in registration\n");
-				exit(-1);
-			}
-      // connect to all servers
-      int i;
-      for (i = 0; i < num_msgservs; i++){
-          if(strcmp(appspec.name,msgservers[i].name)==0){ // if this server on list ingnore it
-            continue;
-          }
-          int fdSave = tcpConnect(msgservers[i].ip,msgservers[i].tpt);
-          if(fdSave!=-1){ // save fd
-              printf("CONNECTED\n");
-              insertFdListEnd(msgservFd,fdSave);
-              printf("%s %d\n",msgservers[i].ip, msgservers[i].tpt);
-          }
+    }else if(strcmp("join",command)==0&&reg==0){
 
-      }
-
-
-      
-      int lenFdList = FdListLen(msgservFd);
-
-      if(lenFdList > 0){
-        // request messages
-
-        sprintf(buffer,"SGET_MESSAGES\n");
-        int p=0;
-        int i;
-        for(i=0;i<lenFdList;i++){
-          int fdGetMessages = getNFd(msgservFd,p);
-
-          if(tcpWrite(fdGetMessages,buffer,strlen(buffer))==-1){
-              close(fdGetMessages);
-          }
-          FD_ZERO(&rfds);
-          FD_SET(fdGetMessages,&rfds);
-          tr.tv_usec = 0;
-          tr.tv_sec = 1;
-          int counter=select(fdGetMessages+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tr);
-
-          if(counter > 0 ){// error try another
-
-              int n;
-              int nread=0;
-              while(1){
-                n = tcpRead(fdGetMessages,buffer+nread,BUFFERSIZE-nread); // quando há muitas mensagens só numa leitura não funciona
-                nread += n;
-                buffer[nread] = '\0';
-                if(saveMessages(m,buffer)==0){ // concluido com sucesso, mensagem completa
-                  break;
-                }
-
+          reg = 1	;
+          getServers(fdIdUDP,msgservers,&num_msgservs,appspec.siip,appspec.sipt);
+    			sprintf(test_reg,"REG %s;%s;%d;%d",appspec.name,appspec.ip,appspec.upt,appspec.tpt);
+    			if(udpWriteTo(fdIdServer,test_reg,strlen(test_reg),appspec.siip,appspec.sipt)==-1){
+    				printf("ERROR: in registration\n");
+    				exit(-1);
+    			}
+          // connect to all servers
+          int i;
+          for (i = 0; i < num_msgservs; i++){
+              if(strcmp(appspec.name,msgservers[i].name)==0){ // if this server on list ingnore it
+                continue;
               }
-              break; // sucess
+              int fdSave = tcpConnect(msgservers[i].ip,msgservers[i].tpt);
+              if(fdSave!=-1){ // save fd
+                  printf("CONNECTED\n");
+                  insertFdListEnd(msgservFd,fdSave);
+                  printf("%s %d\n",msgservers[i].ip, msgservers[i].tpt);
+              }
+
           }
 
+
+
+        int lenFdList = FdListLen(msgservFd);
+
+        if(lenFdList > 0){
+          // request messages
+
+          sprintf(buffer,"SGET_MESSAGES\n");
+          int p=0;
+          int i;
+          for(i=0;i<lenFdList;i++){
+            int fdGetMessages = getNFd(msgservFd,p);
+
+            if(tcpWrite(fdGetMessages,buffer,strlen(buffer))==-1){
+                close(fdGetMessages);
+            }
+            FD_ZERO(&rfds);
+            FD_SET(fdGetMessages,&rfds);
+            tr.tv_usec = 0;
+            tr.tv_sec = 1;
+            int counter=select(fdGetMessages+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tr);
+
+            if(counter > 0 ){// error try another
+
+                int n;
+                int nread=0;
+                while(1){
+                  n = tcpRead(fdGetMessages,buffer+nread,BUFFERSIZE-nread); // quando há muitas mensagens só numa leitura não funciona
+                  nread += n;
+                  buffer[nread] = '\0';
+                  if(saveMessages(m,buffer)==0){ // concluido com sucesso, mensagem completa
+                    break;
+                  }
+
+                }
+                break; // sucess
+            }
+
+          }
+          printf("Sucess in registration\n");
         }
-      }
-      printf("Sucess in registration\n");
     }else if(strcmp("exit",command)==0){
       close_correct();
       exit(0);
@@ -339,9 +347,7 @@ int main(int argc, char *argv[])
   fdIdUDP = udpServer(appspec.upt);
 	fdIdTCPAccept = tcpBindListen(appspec.tpt);
 
-  getServers(fdIdUDP,msgservers,&num_msgservs,appspec.siip,appspec.sipt);
 
-  
 
   struct timeval tr;
   select_ini = time(0);

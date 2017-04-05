@@ -61,9 +61,11 @@ int udpRead(int udp_descriptor, char * buffer, int length)
  * @param  addr           [addr of receiver]
  * @return                [status]
  */
-int udpReadAndGetSender(int udp_descriptor, char * buffer, int length , struct sockaddr_in ** addr, size_t  * slen){
+int udpReadAndGetSender(int udp_descriptor, char * buffer, int length , struct sockaddr_in ** addr, socklen_t  * slen){
   struct sockaddr_in * addr_aux = malloc(sizeof(struct sockaddr_in));
-  
+  if(addr_aux == NULL){
+      return -1;
+  }
   // testar malloc
   *addr = addr_aux;
   //socklen_t addrlen;
@@ -80,9 +82,7 @@ int udpReadAndGetSender(int udp_descriptor, char * buffer, int length , struct s
  * @param  server         [description]
  * @return                [description]
  */
-int udpWriteToWithSockAddr(int udp_descriptor,char * mensage, int length,struct sockaddr_in * server, size_t  * slen){
-
-    //size_t slen = sizeof(server);
+int udpWriteToWithSockAddr(int udp_descriptor,char * mensage, int length,struct sockaddr_in * server, socklen_t  * slen){
 
     return sendto(udp_descriptor,mensage, length, 0,(struct sockaddr *) server, *slen);
 
