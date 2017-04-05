@@ -49,7 +49,7 @@ void showLastMessages (char * command, int n_server)
 		help();
 		return;
 	}
-	
+	sprintf(buffer,"GET_MESSAGES %d",n);
 	len=strlen(buffer);
 
 	if (udpWriteTo(myFd, buffer, len, msgservers[n_server].ip,
