@@ -95,7 +95,7 @@ void printMessageList(messageList * m){
     if(aux==NULL)
       printf("Lista vazia\n");
     while(aux != NULL){
-        printf("%s %d\n",aux->message,aux->lc);
+        printf("%d : %s\n",aux->lc,aux->message);
         aux = aux->next;
     }
 }

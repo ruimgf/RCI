@@ -28,6 +28,7 @@ int udpWriteTo(int udp_descriptor,char * mensage, int length,char * ip, int port
     //verificar argumentos
     struct sockaddr_in server;
     size_t slen = sizeof(server);
+
     server.sin_family = AF_INET;
     server.sin_port = htons(port);
 
@@ -60,11 +61,15 @@ int udpRead(int udp_descriptor, char * buffer, int length)
  * @param  addr           [addr of receiver]
  * @return                [status]
  */
-int udpReadAndGetSender(int udp_descriptor, char * buffer, int length , struct sockaddr_in ** addr){
+int udpReadAndGetSender(int udp_descriptor, char * buffer, int length , struct sockaddr_in ** addr, size_t  * slen){
   struct sockaddr_in * addr_aux = malloc(sizeof(struct sockaddr_in));
+  
+  // testar malloc
   *addr = addr_aux;
-  socklen_t addrlen;
-  return recvfrom(udp_descriptor,buffer,length,0,(struct sockaddr*)addr_aux,&addrlen);
+  //socklen_t addrlen;
+  *slen = sizeof(*addr_aux);
+
+  return recvfrom(udp_descriptor,buffer,length,0,(struct sockaddr*)addr_aux,slen);
 }
 
 /**
@@ -75,11 +80,11 @@ int udpReadAndGetSender(int udp_descriptor, char * buffer, int length , struct s
  * @param  server         [description]
  * @return                [description]
  */
-int udpWriteToWithSockAddr(int udp_descriptor,char * mensage, int length,struct sockaddr_in server){
+int udpWriteToWithSockAddr(int udp_descriptor,char * mensage, int length,struct sockaddr_in * server, size_t  * slen){
 
-    size_t slen = sizeof(server);
+    //size_t slen = sizeof(server);
 
-    return sendto(udp_descriptor,mensage, length, 0, (struct sockaddr*) &server, slen);
+    return sendto(udp_descriptor,mensage, length, 0,(struct sockaddr *) server, *slen);
 
 }
 

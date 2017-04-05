@@ -38,7 +38,7 @@ int udpRead(int udp_descriptor, char * buffer, int length);
  * @param  addr           [addr of receiver]
  * @return                [status]
  */
-int udpReadAndGetSender(int udp_descriptor, char * buffer, int length , struct sockaddr_in ** addr);
+int udpReadAndGetSender(int udp_descriptor, char * buffer, int length , struct sockaddr_in ** addr,size_t  * slen);
 
 
 /**
@@ -49,7 +49,7 @@ int udpReadAndGetSender(int udp_descriptor, char * buffer, int length , struct s
  * @param  server         [description]
  * @return                [description]
  */
-int udpWriteToWithSockAddr(int udp_descriptor,char * mensage, int length,struct sockaddr_in server);
+int udpWriteToWithSockAddr(int udp_descriptor,char * mensage, int length,struct sockaddr_in *  server,size_t  * slen);
 
 /**
  * [udpServer create a udp socket on a specific port]

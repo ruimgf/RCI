@@ -51,7 +51,7 @@ void showLastMessages (char * command, int n_server)
 	}
 	sprintf(buffer,"GET_MESSAGES %d",n);
 	len=strlen(buffer);
-	printf("%s\n",buffer);
+	
 	if (udpWriteTo(myFd, buffer, len, msgservers[n_server].ip,
       msgservers[n_server].upt) < 0)
 	{
@@ -59,8 +59,9 @@ void showLastMessages (char * command, int n_server)
 		exit(-1);
 	}
 
-
-	if(select(myFd+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tr)>0)
+	int l = select(myFd+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tr);
+	
+	if(l>0)
 	{
 		nread=udpRead(myFd, buffer, BUFFERSIZE);
 		if (nread >= 0)
@@ -187,10 +188,10 @@ int main(int argc, char ** argv)
 
   // Random selection of message server to comunicate with
 	int random_server = rand()%num_msgservs;
-	printf("Connect to msgserv :%s on port %d\n",msgservers[random_server].ip,msgservers[random_server].upt);
+	printf("Connected to msgserv : %s on port %d\n",msgservers[random_server].ip,msgservers[random_server].upt);
 	while(1)
 	{
-		printf("Enter a command:  ");
+		printf(">> ");
 		keyboardRead(random_server);
 	}
 
