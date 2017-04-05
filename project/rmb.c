@@ -49,9 +49,9 @@ void showLastMessages (char * command, int n_server)
 		help();
 		return;
 	}
-	sprintf(buffer,"GET_MESSAGES %d",n);
-	len=strlen(buffer);
 	
+	len=strlen(buffer);
+
 	if (udpWriteTo(myFd, buffer, len, msgservers[n_server].ip,
       msgservers[n_server].upt) < 0)
 	{
@@ -60,7 +60,7 @@ void showLastMessages (char * command, int n_server)
 	}
 
 	int l = select(myFd+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tr);
-	
+
 	if(l>0)
 	{
 		nread=udpRead(myFd, buffer, BUFFERSIZE);
