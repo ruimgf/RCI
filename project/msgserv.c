@@ -184,7 +184,10 @@ void readRmb(int fdIdServer){
   free(addr_client);
 
 }
-
+/**
+ * [keyboardRead process request from keyboard]
+ * @param fdIdServer [fd of udp socket]
+ */
 void keyboardRead(int fdIdServer){
   char buffer[BUFFERSIZE];
   char command[BUFFERSIZE];
@@ -268,8 +271,6 @@ int main(int argc, char *argv[])
   // ignore signal SIGPIPE
 	if((old_handler=signal(SIGPIPE,SIG_IGN))==SIG_ERR)
 		exit(1);
-
-
 
   time_t select_ini, select_end;
 

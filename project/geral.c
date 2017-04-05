@@ -1,6 +1,14 @@
 #include "geral.h"
 
-/* ------------------ GET SERVERS FUNCTION -------------------------- */
+
+/**
+ * [getServers get list of servers from identities server]
+ * @param myFd    [udp descriptor of  requester]
+ * @param [msgserv]  [array to save msg servers]
+ * @param num_msg [number of msg servers]
+ * @param siip    [ip of identities server]
+ * @param sipt    [port of identities server]
+ */
 void getServers(int myFd ,msgserv msgservers[100],int  * num_msg, char * siip, int sipt)
 {
   char buffer[BUFFERSIZE];
@@ -94,7 +102,11 @@ void getServers(int myFd ,msgserv msgservers[100],int  * num_msg, char * siip, i
     exit(-1);
 	}
 }
-
+/**
+ * [printServers print information of message servers]
+ * @param [name]       [array of msgservers]
+ * @param num_msgservs [number of msgservers]
+ */
 void printServers(msgserv msgservers[100], int num_msgservs){
   int i;
   if(num_msgservs==0)
@@ -107,9 +119,11 @@ void printServers(msgserv msgservers[100], int num_msgservs){
   }
 
 }
-
-////////////////////////////// siPortIp  //////////////////////////
-
+/**
+* [siPortIp get ip from defaul si tejo.tecnico.ulisboa.pt]
+* @param siip [description]
+* @param sipt [description]
+*/
 void siPortIp(char * siip, int * sipt)
 {
 	struct hostent *serverid;
@@ -121,6 +135,6 @@ void siPortIp(char * siip, int * sipt)
 
 	sprintf(siip,"%s",inet_ntoa(*serverid_ip));
 	*sipt = 59000;
-  
+
 
 }

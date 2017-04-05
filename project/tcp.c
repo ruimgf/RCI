@@ -6,13 +6,16 @@
 #include <stdio.h>
 #include <unistd.h>
 
-
+/**
+ * [tcpBindListen create a socket bind and listen]
+ * @param  server_port [server port to bind]
+ * @return             [socket fd]
+ */
 int tcpBindListen(int server_port){
   int fd;
   struct sockaddr_in addr;
   if((fd=socket(AF_INET,SOCK_STREAM,0))==-1)
       return -1;
-
 
   memset((void*)&addr,(int)'\0',sizeof(addr));
   addr.sin_family=AF_INET;
@@ -23,13 +26,16 @@ int tcpBindListen(int server_port){
       return -1;
   }
 
-
   if(listen(fd,5)==-1)
     return -1;
 
   return fd;
 }
-
+/**
+ * [tcpAccept accept new connection]
+ * @param  myFd [fd to accept]
+ * @return      [fd of new connection]
+ */
 int tcpAccept(int myFd){
     int newFd;
     socklen_t addrlen;
@@ -41,10 +47,10 @@ int tcpAccept(int myFd){
 }
 
 /**
- * [tcp_connect Realiza uma nova conexão ao servidor]
- * @param  tcp_server_ip   [Endereço do Servidor]
- * @param  tcp_server_port [Porta do Servidor]
- * @return                [Return]
+ * [tcpConnect make a connection]
+ * @param  server_ip   [ip of server to connect]
+ * @param  server_port [port of server]
+ * @return             [socket of connection]
  */
 int tcpConnect(char * server_ip, int server_port){
 
@@ -78,10 +84,11 @@ int tcpConnect(char * server_ip, int server_port){
 
 
 /**
- * [tcp_write Trata operções de escrita por parte dos clientes]
- * @param  tcp_descriptor [identificador do servidor]
- * @param  mensage           [chave]
- * @return               [-1 em caso de erro 0 no caso de sucesso]
+ * [tcpWrite write to a TCP socket]
+ * @param  tcp_descriptor [descriptor of connection]
+ * @param  mensage        [message to send]
+ * @param  length         [length of message]
+ * @return                [status]
  */
 int tcpWrite(int tcp_descriptor,char * mensage, int length){
 
@@ -103,7 +110,13 @@ int tcpWrite(int tcp_descriptor,char * mensage, int length){
 
 }
 
-
+/**
+ * [tcpRead read from a socket]
+ * @param  tcp_descriptor [tcp descriptor of connection]
+ * @param  buffer         [buffer to save read]
+ * @param  length         [length of max read]
+ * @return                [status]
+ */
 int tcpRead(int tcp_descriptor, char * buffer, int length){
   return recv(tcp_descriptor,buffer,length, 0);
 }

@@ -116,6 +116,7 @@ void keyboardRead(int random_server)
 		}
 		else if(strcmp("exit",command)==0)
 		{
+			close(myFd);
 			exit(0);
 		}
 		else if(strcmp("help",command)==0)

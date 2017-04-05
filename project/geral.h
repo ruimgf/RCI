@@ -33,7 +33,24 @@ typedef struct appSpec_{
   int r;            //time out
 }appSpec;
 
-
+/**
+ * [getServers get list of servers from identities server]
+ * @param myFd    [udp descriptor of  requester]
+ * @param [msgserv]  [array to save msg servers]
+ * @param num_msg [number of msg servers]
+ * @param siip    [ip of identities server]
+ * @param sipt    [port of identities server]
+ */
 void getServers(int myFd ,msgserv msgservers[100],int  * num_msg, char * siip, int sipt);
+/**
+ * [printServers print information of message servers]
+ * @param [name]       [array of msgservers]
+ * @param num_msgservs [number of msgservers]
+ */
 void printServers(msgserv msgservers[100], int num_msgservs);
+/**
+ * [siPortIp get ip from defaul si tejo.tecnico.ulisboa.pt]
+ * @param siip [description]
+ * @param sipt [description]
+ */
 void siPortIp(char * siip, int * sipt);
