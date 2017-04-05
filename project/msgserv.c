@@ -21,6 +21,15 @@ int fdIdTCPAccept;
 msgserv msgservers[100];
 fdList * msgservFd;
 int num_msgservs = 0;
+void help()
+{
+	printf("\n MSGSERV APP COMMANDS\n");
+	printf(" show_servers             -identities of registed message servers \n");
+	printf(" join                     -regist in identities server \n");
+	printf(" show_messages            -show messages saved in message servers \n");
+	printf(" exit                     -application exit\n\n");
+}
+
 
 /**
  * [wrongUse description]
@@ -208,6 +217,7 @@ void keyboardRead(int fdIdServer){
     }
     if(ln == 0){
       printf("Unkown command\n");
+      help();
       return;
     }
     if(sscanf(buffer,"%s",command)!=1){
@@ -288,6 +298,7 @@ void keyboardRead(int fdIdServer){
       exit(0);
     }else{
       printf("Unkown command\n");
+      help();
     }
   }
 }
