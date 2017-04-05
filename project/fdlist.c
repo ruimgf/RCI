@@ -1,13 +1,20 @@
 #include "fdlist.h"
 
-
+/**
+ * [createFdList create a list of file descriptor]
+ * @return [pointer to list]
+ */
 fdList  * createFdList(){
     fdList  * m1 = malloc(sizeof(fdList));
     m1->begin = NULL;
     m1->end = NULL;
     return m1;
 }
-
+/**
+ * [insertFdListEnd insert fd on list]
+ * @param m  [pointer to fd list]
+ * @param fd [fd to insert]
+ */
 void insertFdListEnd(fdList * m ,int fd){
     fdNode * aux;
     fdNode * insertItem;
@@ -30,7 +37,11 @@ void insertFdListEnd(fdList * m ,int fd){
       m->end = insertItem;
     }
 }
-
+/**
+ * [removeFdListEnd remove a fd from list]
+ * @param m  [pointer to fd list]
+ * @param fd [fd to remove]
+ */
 void removeFdListEnd(fdList * m,int fd){
     fdNode * aux = m->begin;
     fdNode * aux2=m->begin->next;
@@ -49,7 +60,11 @@ void removeFdListEnd(fdList * m,int fd){
       }
     }
 }
-
+/**
+ * [FdListLen get fd list len]
+ * @param  m [pointer to fd list]
+ * @return   [len of list]
+ */
 void freeFdList(fdList * m){
     fdNode * aux = m->begin;
     fdNode * aux1;
@@ -61,7 +76,11 @@ void freeFdList(fdList * m){
     }
     free(m);
 }
-
+/**
+ * [FdListLen get fd list len]
+ * @param  m [pointer to fd list]
+ * @return   [len of list]
+ */
 int FdListLen(fdList * m){
 
     fdNode * aux = m->begin;
@@ -72,7 +91,12 @@ int FdListLen(fdList * m){
     }
     return i;
 }
-
+/**
+ * [getNFd get fd on position n]
+ * @param  m [pointer to fd list]
+ * @param  n [number of fd to get]
+ * @return   [fd]
+ */
 int getNFd(fdList * m, int n){
     fdNode * aux = m->begin;
 
