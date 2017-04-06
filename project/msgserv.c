@@ -230,7 +230,7 @@ void keyboardRead(int fdIdServer){
     }else if(strcmp("show_messages",command)==0){
       printMessageList(m);
     }else if(strcmp("join",command)==0&&reg==0){
-
+		 
           reg = 1	;
           getServers(fdIdUDP,msgservers,&num_msgservs,appspec.siip,appspec.sipt);
     			sprintf(test_reg,"REG %s;%s;%d;%d",appspec.name,appspec.ip,appspec.upt,appspec.tpt);
@@ -298,6 +298,8 @@ void keyboardRead(int fdIdServer){
     }else if(strcmp("exit",command)==0){
       close_correct();
       exit(0);
+    }else if(strcmp("join",command)==0&&reg==1){
+		printf("join yet done\n");
     }else{
       printf("Unkown command\n");
       help();
