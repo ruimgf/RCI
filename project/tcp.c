@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
 
 /**
  * [tcpBindListen create a socket bind and listen]
@@ -23,6 +24,7 @@ int tcpBindListen(int server_port){
   addr.sin_port=htons(server_port);
 
   if(bind(fd,(struct sockaddr*)&addr,sizeof(addr))==-1){
+      printf("erro no bind\n");
       return -1;
   }
 
@@ -36,13 +38,18 @@ int tcpBindListen(int server_port){
  * @param  myFd [fd to accept]
  * @return      [fd of new connection]
  */
-int tcpAccept(int myFd){
+int tcpAccept(int myFd,char * ipAccept,int * tptAccept){
     int newFd;
     socklen_t addrlen;
     struct sockaddr_in addr;
     addrlen=sizeof(addr);
     if((newFd=accept(myFd,(struct sockaddr*)&addr,&addrlen))==-1)
       return -1;
+
+    strcpy(ipAccept,inet_ntoa(addr.sin_addr));
+
+    printf("%d\n",ntohs(addr.sin_port));
+    //*tptAccept  = i;
     return newFd;
 }
 

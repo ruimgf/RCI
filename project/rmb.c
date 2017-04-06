@@ -6,7 +6,7 @@ int myFd;                 //sockect
 char siip[16];            //IP server of identities
 int sipt;                 //PORT server of identities
 char buffer[BUFFERSIZE];  //Buffer to comunicate - read and write
-int num_msgservs =0;      //Number of servers in the network
+int num_msgservs=0;      //Number of servers in the network
 
 msgserv msgservers[100];
 

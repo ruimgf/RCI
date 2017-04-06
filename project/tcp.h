@@ -12,7 +12,7 @@ int tcpBindListen(int server_port);
  * @param  myFd [fd to accept]
  * @return      [fd of new connection]
  */
-int tcpAccept(int myFd);
+int tcpAccept(int myFd,char * ipAccept,int * tptAccept);
 /**
  * [tcpConnect make a connection]
  * @param  server_ip   [ip of server to connect]

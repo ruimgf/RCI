@@ -6,6 +6,10 @@
 
 typedef struct fdNode_{
     int fd;
+    char name[20];  //name
+    char ip[17];    //IP address
+    int upt;        //UDP port
+    int tpt;        //TCP port
     struct fdNode_ * next;
 }fdNode;
 
@@ -23,7 +27,7 @@ fdList  *  createFdList();
  * @param m  [pointer to fd list]
  * @param fd [fd to insert]
  */
-void insertFdListEnd(fdList * m,int fd);
+void insertFdListEnd(fdList * m,int fd,char * name, char * ip , int upt, int tpt);
 /**
  * [removeFdListEnd remove a fd from list]
  * @param m  [pointer to fd list]
@@ -48,3 +52,5 @@ int FdListLen(fdList * m);
  * @return   [fd]
  */
 int getNFd(fdList * m, int n);
+
+void printFdList(fdList * m);

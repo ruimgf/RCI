@@ -226,8 +226,7 @@ void keyboardRead(int fdIdServer){
     }
 
     if(strcmp("show_servers",command)==0){
-      getServers(fdIdServer,msgservers,&num_msgservs,appspec.siip,appspec.sipt);
-			printServers(msgservers,num_msgservs);
+      printFdList(msgservFd);
     }else if(strcmp("show_messages",command)==0){
       printMessageList(m);
     }else if(strcmp("join",command)==0&&reg==0){
@@ -248,7 +247,7 @@ void keyboardRead(int fdIdServer){
               int fdSave = tcpConnect(msgservers[i].ip,msgservers[i].tpt);
               if(fdSave!=-1){ // save fd
                   printf("CONNECTED\n");
-                  insertFdListEnd(msgservFd,fdSave);
+                  insertFdListEnd(msgservFd,fdSave,msgservers[i].name,msgservers[i].ip,msgservers[i].tpt,msgservers[i].upt);
                   printf("%s %d\n",msgservers[i].ip, msgservers[i].tpt);
               }
 
@@ -260,7 +259,8 @@ void keyboardRead(int fdIdServer){
           // request messages
 
           sprintf(buffer,"SGET_MESSAGES\n");
-          int p=0;
+
+					int p=0;
           int i;
           for(i=0;i<lenFdList;i++){
             int fdGetMessages = getNFd(msgservFd,p);
@@ -272,6 +272,7 @@ void keyboardRead(int fdIdServer){
             FD_SET(fdGetMessages,&rfds);
             tr.tv_usec = 0;
             tr.tv_sec = 1;
+
             int counter=select(fdGetMessages+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tr);
 
             if(counter > 0 ){// error try another
@@ -279,6 +280,7 @@ void keyboardRead(int fdIdServer){
                 int n;
                 int nread=0;
                 while(1){
+
                   n = tcpRead(fdGetMessages,buffer+nread,BUFFERSIZE-nread); // quando há muitas mensagens só numa leitura não funciona
                   nread += n;
                   buffer[nread] = '\0';
@@ -340,7 +342,8 @@ int main(int argc, char *argv[])
 	int i;
 	int fdTCPread;
 	int counter=1	;
-
+	char ipAccept[18];
+	int tptAccept;
 	void (*old_handler)(int);
 
   // ignore signal SIGPIPE
@@ -354,8 +357,15 @@ int main(int argc, char *argv[])
   m = createMessageList(appspec.m);
   msgservFd = createFdList();
   fdIdUDP = udpServer(appspec.upt);
+	if(fdIdUDP==-1){
+		printf("error create UDP socket\n");
+		exit(-1);
+	}
 	fdIdTCPAccept = tcpBindListen(appspec.tpt);
-
+	if(fdIdTCPAccept==-1){
+		printf("error create tcp socket\n");
+		exit(-1);
+	}
 
 
   struct timeval tr;
@@ -418,8 +428,13 @@ int main(int argc, char *argv[])
       }
 
       if(FD_ISSET(fdIdTCPAccept,&rfds)){
-        int fdSave = tcpAccept(fdIdTCPAccept);
-        insertFdListEnd(msgservFd,fdSave);
+        int fdSave = tcpAccept(fdIdTCPAccept,ipAccept,&tptAccept);
+				getServers(fdIdUDP,msgservers,&num_msgservs,appspec.siip,appspec.sipt);
+				for(i=0;i<num_msgservs;i++){
+
+				}
+				printf("%s %d\n",ipAccept,tptAccept);
+				insertFdListEnd(msgservFd,fdSave,msgservers[0].name,msgservers[0].ip,msgservers[0].tpt,msgservers[0].upt);
 
       }
 

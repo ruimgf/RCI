@@ -201,7 +201,7 @@ int saveMessages(messageList * m, char * messages){
      return -1;
    }
    if(strlen(messages)<12)
-      return -1;
+      return 0;
 
    curLine++; // skipe SMESSAGES
    while(curLine)

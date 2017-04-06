@@ -19,7 +19,7 @@ fdList  * createFdList(){
  * @param m  [pointer to fd list]
  * @param fd [fd to insert]
  */
-void insertFdListEnd(fdList * m ,int fd){
+void insertFdListEnd(fdList * m,int fd,char * name, char * ip , int upt, int tpt){
     fdNode * aux;
     fdNode * insertItem;
     aux = m->end;
@@ -32,7 +32,11 @@ void insertFdListEnd(fdList * m ,int fd){
     }
 
     insertItem->fd = fd;
+    insertItem->tpt = tpt;
+    insertItem->upt = tpt;
     insertItem->next = NULL;
+    strcpy(insertItem->ip,ip);
+    strcpy(insertItem->name,name);
 
     if(m->begin == NULL){ // Empty List
       m->begin = insertItem;
@@ -116,4 +120,20 @@ int getNFd(fdList * m, int n){
         aux = aux->next;
 
     return aux->fd;
+}
+
+
+void printFdList(fdList * m){
+    fdNode * aux;
+    aux = m->begin;
+    int i=0;
+    if(aux==NULL)
+      printf("Lista vazia\n");
+    while(aux != NULL){
+      i++;
+      printf("Servidor %d - NAME: %s\t IP: %s\t UDP: %d\t TCP: %d\n",
+            i, aux->name,aux->ip,aux->upt,
+            aux->tpt);
+        aux = aux->next;
+    }
 }
