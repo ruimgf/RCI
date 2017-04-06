@@ -326,7 +326,6 @@ void tcpRequest(int fdTCPread){
 				saveMessages(m,buffer);
 			}
 		}else{
-			printf("One server went down\n");
 			close(fdTCPread);
 			removeFdListEnd(msgservFd,fdTCPread);
 		}
@@ -430,8 +429,7 @@ int main(int argc, char *argv[])
       if(FD_ISSET(fdIdTCPAccept,&rfds)){
         int fdSave = tcpAccept(fdIdTCPAccept,ipAccept,&tptAccept);
 				if(fdSave != -1){
-					printf("%s %d\n",ipAccept,tptAccept);
-					insertFdListEnd(msgservFd,fdSave,"Unkown",ipAccept,tptAccept,-1);
+					insertFdListEnd(msgservFd,fdSave,"Unkown",ipAccept,-1,tptAccept);
 				}
 
 
