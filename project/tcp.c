@@ -48,8 +48,8 @@ int tcpAccept(int myFd,char * ipAccept,int * tptAccept){
 
     strcpy(ipAccept,inet_ntoa(addr.sin_addr));
 
-    int i = ntohs(addr.sin_port)
-    *tptAccept  = i;
+    int i =(int) ntohs(addr.sin_port);
+    (*tptAccept)  = i;
     return newFd;
 }
 

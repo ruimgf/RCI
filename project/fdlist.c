@@ -33,7 +33,7 @@ void insertFdListEnd(fdList * m,int fd,char * name, char * ip , int upt, int tpt
 
     insertItem->fd = fd;
     insertItem->tpt = tpt;
-    insertItem->upt = tpt;
+    insertItem->upt = upt;
     insertItem->next = NULL;
     strcpy(insertItem->ip,ip);
     strcpy(insertItem->name,name);
