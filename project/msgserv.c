@@ -429,12 +429,12 @@ int main(int argc, char *argv[])
 
       if(FD_ISSET(fdIdTCPAccept,&rfds)){
         int fdSave = tcpAccept(fdIdTCPAccept,ipAccept,&tptAccept);
-				getServers(fdIdUDP,msgservers,&num_msgservs,appspec.siip,appspec.sipt);
-				for(i=0;i<num_msgservs;i++){
-
+				if(fdSave != -1){
+					printf("%s %d\n",ipAccept,tptAccept);
+					insertFdListEnd(msgservFd,fdSave,"Unkown",ipAccept,tptAccept,-1);
 				}
-				printf("%s %d\n",ipAccept,tptAccept);
-				insertFdListEnd(msgservFd,fdSave,msgservers[0].name,msgservers[0].ip,msgservers[0].tpt,msgservers[0].upt);
+
+
 
       }
 
