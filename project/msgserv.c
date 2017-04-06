@@ -175,6 +175,8 @@ void readRmb(int fdIdServer){
 				if(tcpWrite(fdTCPread,buffer,strlen(buffer))==-1){
 					removeFdListEnd(msgservFd,fdTCPread);
 					printf("ERROR: one server went down\n");
+				}else{
+					printf("error\n");
 				}
 		}
 
@@ -184,7 +186,10 @@ void readRmb(int fdIdServer){
     int n_messages;
     char * buffer_msg;
 
-    sscanf(buffer,"%s %d",command,&n_messages);
+    if(sscanf(buffer,"%s %d",command,&n_messages)!=2){
+			printf("invalid request\n");
+			return;
+		}
 
     buffer_msg = getLastNmessages(m,n_messages);
 
@@ -230,7 +235,7 @@ void keyboardRead(int fdIdServer){
     }else if(strcmp("show_messages",command)==0){
       printMessageList(m);
     }else if(strcmp("join",command)==0&&reg==0){
-		 
+
           reg = 1	;
           getServers(fdIdUDP,msgservers,&num_msgservs,appspec.siip,appspec.sipt);
     			sprintf(test_reg,"REG %s;%s;%d;%d",appspec.name,appspec.ip,appspec.upt,appspec.tpt);
@@ -319,10 +324,16 @@ void tcpRequest(int fdTCPread){
 
 		if(n > 0){
 			buffer[n] = '\0';
-			sscanf(buffer,"%s\n",command);
+			if(sscanf(buffer,"%s\n",command)!=1){
+				printf("invalid request\n");
+				return;
+			}
 			if(!strcmp(command,"SGET_MESSAGES")){
 				char * send  = getAllMessages(m);
-				tcpWrite(fdTCPread,send,strlen(send));
+				if(tcpWrite(fdTCPread,send,strlen(send))==-1){
+					printf("error write\n");
+					return;
+				}
 			}
 			if(!strcmp(command,"SMESSAGES")){
 				saveMessages(m,buffer);

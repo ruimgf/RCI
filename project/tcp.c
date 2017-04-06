@@ -78,6 +78,7 @@ int tcpConnect(char * server_ip, int server_port){
 
   if (inet_aton(server_ip, &server_addr.sin_addr) == 0){
       printf("invalid address\n");
+      return -1;
   }
   len_endereco = sizeof(server_addr);
   err = connect(sock_fd, (const struct sockaddr *) &server_addr,len_endereco);

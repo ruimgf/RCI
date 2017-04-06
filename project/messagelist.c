@@ -211,7 +211,7 @@ int saveMessages(messageList * m, char * messages){
 
       if (nextLine){
         *nextLine = '\0';  // temporarily terminate the current line
-        //sscanf(curLine,"%d;%s",&parse_lc,parse_message);
+        
         begin_string = strchr(curLine, ';');
           if(begin_string!=NULL){
           strncpy(strlc,curLine,(begin_string - curLine));
