@@ -21,6 +21,7 @@ void getServers(int myFd ,msgserv msgservers[100],int  * num_msg, char * siip, i
   *num_msg  = 0;
   struct timeval tr;
 	fd_set rfds;
+	tr.tv_usec = 0;
 	tr.tv_sec = REFRESH_RATE;
 
 	FD_ZERO(&rfds);

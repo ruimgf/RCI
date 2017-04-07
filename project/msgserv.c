@@ -237,24 +237,29 @@ void keyboardRead(int fdIdServer){
     }else if(strcmp("join",command)==0&&reg==0){
 
           reg = 1	;
+          
           getServers(fdIdUDP,msgservers,&num_msgservs,appspec.siip,appspec.sipt);
     			sprintf(test_reg,"REG %s;%s;%d;%d",appspec.name,appspec.ip,appspec.upt,appspec.tpt);
     			if(udpWriteTo(fdIdServer,test_reg,strlen(test_reg),appspec.siip,appspec.sipt)==-1){
     				printf("ERROR: in registration\n");
     				exit(-1);
     			}
+    			
           // connect to all servers
           int i;
           for (i = 0; i < num_msgservs; i++){
               if(strcmp(appspec.name,msgservers[i].name)==0){ // if this server on list ingnore it
                 continue;
               }
+              printf("Trying to connect to %s\n",msgservers[i].ip);
               int fdSave = tcpConnect(msgservers[i].ip,msgservers[i].tpt);
               if(fdSave!=-1){ // save fd
                   printf("CONNECTED\n");
                   insertFdListEnd(msgservFd,fdSave,msgservers[i].name,msgservers[i].ip,msgservers[i].tpt,msgservers[i].upt);
-                  printf("%s %d\n",msgservers[i].ip, msgservers[i].tpt);
-              }
+                  
+              }else{
+				  printf("ERROR\n");
+			  }
 
           }
 
