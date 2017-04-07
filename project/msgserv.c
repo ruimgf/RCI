@@ -276,7 +276,7 @@ void keyboardRead(int fdIdServer){
             FD_ZERO(&rfds);
             FD_SET(fdGetMessages,&rfds);
             tr.tv_usec = 0;
-            tr.tv_sec = 1;
+            tr.tv_sec = 3;
 
             int counter=select(fdGetMessages+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tr);
 
@@ -289,10 +289,9 @@ void keyboardRead(int fdIdServer){
                   n = tcpRead(fdGetMessages,buffer+nread,BUFFERSIZE-nread); // quando há muitas mensagens só numa leitura não funciona
                   nread += n;
                   buffer[nread] = '\0';
-                  printf("go save");
+
                   if(saveMessages(m,buffer)==0){ // concluido com sucesso, mensagem completa
-										printf("buffer\n");
-										printf("sucess save\n");
+										
 										break;
                   }
 									FD_ZERO(&rfds);
