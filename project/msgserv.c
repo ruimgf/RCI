@@ -269,7 +269,7 @@ void keyboardRead(int fdIdServer){
           int i;
           for(i=0;i<lenFdList;i++){
             int fdGetMessages = getNFd(msgservFd,i);
-						printf("go write");
+						
             if(tcpWrite(fdGetMessages,buffer,strlen(buffer))==-1){
                 close(fdGetMessages);
             }
@@ -291,7 +291,7 @@ void keyboardRead(int fdIdServer){
                   buffer[nread] = '\0';
 
                   if(saveMessages(m,buffer)==0){ // concluido com sucesso, mensagem completa
-										
+
 										break;
                   }
 									FD_ZERO(&rfds);
