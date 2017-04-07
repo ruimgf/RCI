@@ -175,9 +175,9 @@ void readRmb(int fdIdServer){
 				if(tcpWrite(fdTCPread,buffer,strlen(buffer))==-1){
 					removeFdListEnd(msgservFd,fdTCPread);
 					printf("ERROR: one server went down\n");
-				}else{
-					printf("error\n");
 				}
+
+
 		}
 
     // send message to all servers
@@ -292,7 +292,13 @@ void keyboardRead(int fdIdServer){
                   if(saveMessages(m,buffer)==0){ // concluido com sucesso, mensagem completa
                     break;
                   }
-
+									FD_ZERO(&rfds);
+			            FD_SET(fdGetMessages,&rfds);
+									counter=select(fdGetMessages+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tr);
+									if(counter==0){
+										printf("error read\n");
+										exit(-1);
+									}
                 }
                 break; // sucess
             }
