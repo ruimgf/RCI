@@ -239,11 +239,11 @@ void keyboardRead(int fdIdServer){
           reg = 1	;
           
           getServers(fdIdUDP,msgservers,&num_msgservs,appspec.siip,appspec.sipt);
-    			sprintf(test_reg,"REG %s;%s;%d;%d",appspec.name,appspec.ip,appspec.upt,appspec.tpt);
-    			if(udpWriteTo(fdIdServer,test_reg,strlen(test_reg),appspec.siip,appspec.sipt)==-1){
-    				printf("ERROR: in registration\n");
-    				exit(-1);
-    			}
+			sprintf(test_reg,"REG %s;%s;%d;%d",appspec.name,appspec.ip,appspec.upt,appspec.tpt);
+			if(udpWriteTo(fdIdServer,test_reg,strlen(test_reg),appspec.siip,appspec.sipt)==-1){
+				printf("ERROR: in registration\n");
+				exit(-1);
+			}
     			
           // connect to all servers
           int i;
@@ -311,7 +311,7 @@ void keyboardRead(int fdIdServer){
             }
 
           }
-          printf("Sucess in registration\n");
+          printf("Success in registration\n");
         }
     }else if(strcmp("exit",command)==0){
       close_correct();
