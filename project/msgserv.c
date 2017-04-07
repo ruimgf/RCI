@@ -251,7 +251,7 @@ void keyboardRead(int fdIdServer){
               if(strcmp(appspec.name,msgservers[i].name)==0){ // if this server on list ingnore it
                 continue;
               }
-              printf("Trying to connect to %s\n",msgservers[i].ip);
+              printf("Trying to connect to %s on port %d\n",msgservers[i].ip,msgservers[i].tpt);
               int fdSave = tcpConnect(msgservers[i].ip,msgservers[i].tpt);
               if(fdSave!=-1){ // save fd
                   printf("CONNECTED\n");
@@ -276,12 +276,13 @@ void keyboardRead(int fdIdServer){
             int fdGetMessages = getNFd(msgservFd,i);
 						
             if(tcpWrite(fdGetMessages,buffer,strlen(buffer))==-1){
+                printf("error write");
                 close(fdGetMessages);
             }
             FD_ZERO(&rfds);
             FD_SET(fdGetMessages,&rfds);
             tr.tv_usec = 0;
-            tr.tv_sec = 3;
+            tr.tv_sec = 5;
 
             int counter=select(fdGetMessages+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tr);
 
@@ -344,7 +345,7 @@ void tcpRequest(int fdTCPread){
 			if(!strcmp(command,"SGET_MESSAGES")){
 				char * send  = getAllMessages(m);
 				if(tcpWrite(fdTCPread,send,strlen(send))==-1){
-					printf("error write\n");
+					printf("ERROR write\n");
 					return;
 				}
 			}
