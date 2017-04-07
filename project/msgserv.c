@@ -176,7 +176,7 @@ void readRmb(int fdIdServer){
 					removeFdListEnd(msgservFd,fdTCPread);
 					printf("ERROR: one server went down\n");
 				}
-				
+
 
 		}
 
@@ -265,11 +265,11 @@ void keyboardRead(int fdIdServer){
 
           sprintf(buffer,"SGET_MESSAGES\n");
 
-		  
+
           int i;
           for(i=0;i<lenFdList;i++){
             int fdGetMessages = getNFd(msgservFd,i);
-			printf("go write");
+						printf("go write");
             if(tcpWrite(fdGetMessages,buffer,strlen(buffer))==-1){
                 close(fdGetMessages);
             }
@@ -291,7 +291,9 @@ void keyboardRead(int fdIdServer){
                   buffer[nread] = '\0';
                   printf("go save");
                   if(saveMessages(m,buffer)==0){ // concluido com sucesso, mensagem completa
-                    break;
+										printf("buffer\n");
+										printf("sucess save\n");
+										break;
                   }
 									FD_ZERO(&rfds);
 			            FD_SET(fdGetMessages,&rfds);
