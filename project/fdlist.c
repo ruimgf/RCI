@@ -69,6 +69,8 @@ void removeFdListEnd(fdList * m,int fd){
         free(aux2);
         return;
       }
+      aux2=aux2->next;
+      aux=aux->next;
     }
 }
 /**

@@ -176,7 +176,7 @@ void readRmb(int fdIdServer){
 					removeFdListEnd(msgservFd,fdTCPread);
 					printf("ERROR: one server went down\n");
 				}
-
+				
 
 		}
 
