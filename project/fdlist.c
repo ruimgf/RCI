@@ -130,10 +130,10 @@ void printFdList(fdList * m){
     aux = m->begin;
     int i=0;
     if(aux==NULL)
-      printf("Lista vazia\n");
+      printf("There are no servers\n");
     while(aux != NULL){
       i++;
-      printf("Servidor %d - NAME: %s\t IP: %s\t UDP: %d\t TCP: %d\n",
+      printf("Server %d - NAME: %s\t IP: %s\t UDP: %d\t TCP: %d\n",
             i, aux->name,aux->ip,aux->upt,
             aux->tpt);
         aux = aux->next;

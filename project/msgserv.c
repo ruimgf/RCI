@@ -157,7 +157,7 @@ void readRmb(int fdIdServer){
       buffer[ln] = '\0';
   }
   if(sscanf(buffer,"%s",command)!=1){
-    printf("erro read command\n");
+    printf("ERROR : read command\n");
     return;
   }
 
@@ -168,7 +168,7 @@ void readRmb(int fdIdServer){
     message[140] = '\0';
 
     insertMessageListEnd(m,message,-1);
-		sprintf(buffer,"SMESSAGES\n%d;%s\n\n",m->actualLc,message);
+		sprintf(buffer,"SMESSAGES\n%d;%s\n\n",m->actualLc-1,message);
 		int i;
 		for(i = 0; i<FdListLen(msgservFd); i++ ){
 				int fdTCPread = getNFd(msgservFd,i);
@@ -265,11 +265,11 @@ void keyboardRead(int fdIdServer){
 
           sprintf(buffer,"SGET_MESSAGES\n");
 
-					int p=0;
+		  
           int i;
           for(i=0;i<lenFdList;i++){
-            int fdGetMessages = getNFd(msgservFd,p);
-
+            int fdGetMessages = getNFd(msgservFd,i);
+			printf("go write");
             if(tcpWrite(fdGetMessages,buffer,strlen(buffer))==-1){
                 close(fdGetMessages);
             }
@@ -289,6 +289,7 @@ void keyboardRead(int fdIdServer){
                   n = tcpRead(fdGetMessages,buffer+nread,BUFFERSIZE-nread); // quando há muitas mensagens só numa leitura não funciona
                   nread += n;
                   buffer[nread] = '\0';
+                  printf("go save");
                   if(saveMessages(m,buffer)==0){ // concluido com sucesso, mensagem completa
                     break;
                   }
