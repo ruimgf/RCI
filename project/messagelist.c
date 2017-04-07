@@ -100,7 +100,7 @@ void printMessageList(messageList * m){
     messageNode * aux;
     aux = m->begin;
     if(aux==NULL)
-      printf("Lista vazia\n");
+      printf("There are no messages\n");
     while(aux != NULL){
         printf("%d : %s\n",aux->lc,aux->message);
         aux = aux->next;
